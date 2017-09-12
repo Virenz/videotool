@@ -1,18 +1,22 @@
 // videotool.cpp: 定义控制台应用程序的入口点。
 //
-#include "stdafx.h"
 
 // Copyright (c) 2013 The Chromium Embedded Framework Authors. All rights
 // reserved. Use of this source code is governed by a BSD-style license that
 // can be found in the LICENSE file.
 
 #include <windows.h>
+#include <tchar.h>
+#include "resource.h"
 
 #include "include/cef_sandbox_win.h"
 #include "simple_app.h"
+#include "simple_handler.h"
 
 #pragma comment(lib, "libcef.lib")
 #pragma comment(lib, "libcef_dll_wrapper.lib")
+
+INT_PTR CALLBACK DlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 
 // When generating projects with CMake the CEF_USE_SANDBOX value will be defined
 // automatically if using the required compiler version. Pass -DUSE_SANDBOX=OFF
@@ -32,6 +36,14 @@ int WINAPI WinMain(HINSTANCE hInstance,
 	HINSTANCE hPrevInstance,
 	LPSTR lpCmdLine,
 	int nCmdShow) {
+
+	HWND hdlg = CreateDialog(hInstance, MAKEINTRESOURCE(IDD_VIDEO), NULL, (DLGPROC)DlgProc);
+	if (!hdlg)
+	{
+		return 0;
+	}
+	ShowWindow(hdlg, SW_SHOW);
+
 	UNREFERENCED_PARAMETER(hPrevInstance);
 	UNREFERENCED_PARAMETER(lpCmdLine);
 
@@ -70,17 +82,83 @@ int WINAPI WinMain(HINSTANCE hInstance,
 	// It will create the first browser instance in OnContextInitialized() after
 	// CEF has initialized.
 	CefRefPtr<SimpleApp> app(new SimpleApp);
+	//CefRefPtr<CefApp> app;
 
 	// Initialize CEF.
 	CefInitialize(main_args, settings, app.get(), sandbox_info);
 
-	// Run the CEF message loop. This will block until CefQuitMessageLoop() is
-	// called.
-	CefRunMessageLoop();
-
+	MSG msg;
+	while (GetMessage(&msg, NULL, 0, 0))
+	{
+		TranslateMessage(&msg);
+		DispatchMessage(&msg);
+	}
 	// Shut down CEF.
 	CefShutdown();
 
 	return 0;
 }
 
+INT_PTR CALLBACK DlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	switch (msg)
+	{
+	case WM_INITDIALOG:
+	{
+		break;
+	}
+	case WM_CREATE:
+	{
+		// 设置对话框的图标 
+		//SendMessage(hDlg, WM_SETICON, ICON_SMALL, (LPARAM)LoadIcon(hgInst, MAKEINTRESOURCE(IDI_ICON1)));
+		CefString url = "http://www.sjzvip.com/jiexi8.php?url=http://v.youku.com/v_show/id_XMjk2MTUyMzMxNg==.html?tpa=dW5pb25faWQ9MTAyMjEzXzEwMDAwNl8wMV8wMQ&from=360sousuo&refer=360sousuo";
+		// SimpleHandler implements browser-level callbacks.
+		CefRefPtr<SimpleHandler> handler(new SimpleHandler(false));
+		// Specify CEF browser settings here.
+		CefBrowserSettings browser_settings;
+		CefWindowInfo window_info;
+		RECT rt;
+		HWND brown = GetDlgItem(hDlg, IDC_BROWN);
+		GetClientRect(brown, &rt);
+		window_info.SetAsChild(hDlg, rt);
+		CefBrowserHost::CreateBrowser(window_info, handler, url, browser_settings,
+				NULL);
+
+		// Run the CEF message loop. This will block until CefQuitMessageLoop() is
+		// called.
+		CefRunMessageLoop();
+
+		// Shut down CEF.
+		CefShutdown();
+		return 0;
+	}
+	case WM_SYSCOMMAND:
+	{
+		if (wParam == SC_CLOSE)
+		{
+			CefQuitMessageLoop();
+			PostQuitMessage(0);//退出     
+		}
+		return 0;
+	}
+	case WM_COMMAND:
+	{
+		switch (LOWORD(wParam))
+		{
+		case IDOK:
+		{
+			break;
+		}
+		case IDCANCEL:
+			EndDialog(hDlg, IDCANCEL);
+			break;
+		default:
+			break;
+		}
+		break;
+	}
+	default:
+		break;
+	}
+	return (INT_PTR)FALSE;
+}
