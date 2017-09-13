@@ -14,6 +14,7 @@ class SimpleHandler : public CefClient,
                       public CefLifeSpanHandler,
                       public CefLoadHandler {
 public:
+	SimpleHandler();
 	SimpleHandler(bool use_views);
 	~SimpleHandler();
 
@@ -63,6 +64,10 @@ public:
 	BrowserList browser_list_;
 
 	bool is_closing_;
+	// The child browser window  
+	CefRefPtr<CefBrowser> m_Browser;
+	// The child browser window handle  
+	CefWindowHandle m_BrowserHwnd;
 
 	// Include the default reference counting implementation.
 	IMPLEMENT_REFCOUNTING(SimpleHandler);

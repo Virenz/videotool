@@ -20,6 +20,12 @@ SimpleHandler* g_instance = NULL;
 
 }  // namespace
 
+SimpleHandler::SimpleHandler()
+	: use_views_(false), is_closing_(false) {
+	DCHECK(!g_instance);
+	g_instance = this;
+}
+
 SimpleHandler::SimpleHandler(bool use_views)
     : use_views_(use_views), is_closing_(false) {
   DCHECK(!g_instance);
@@ -57,6 +63,11 @@ void SimpleHandler::OnTitleChange(CefRefPtr<CefBrowser> browser,
 void SimpleHandler::OnAfterCreated(CefRefPtr<CefBrowser> browser) {
   CEF_REQUIRE_UI_THREAD();
 
+  if (!m_Browser.get()) {
+	  // We need to keep the main child window, but not popup windows  
+	  m_Browser = browser;
+	  m_BrowserHwnd = browser->GetHost()->GetWindowHandle();
+  }
   // Add to the list of existing browsers.
   browser_list_.push_back(browser);
 }
@@ -79,6 +90,11 @@ bool SimpleHandler::DoClose(CefRefPtr<CefBrowser> browser) {
 
 void SimpleHandler::OnBeforeClose(CefRefPtr<CefBrowser> browser) {
   CEF_REQUIRE_UI_THREAD();
+
+  if (m_BrowserHwnd == browser->GetHost()->GetWindowHandle()) {
+	  // Free the browser pointer so that the browser can be destroyed  
+	  m_Browser = NULL;
+  }
 
   // Remove from the list of existing browsers.
   BrowserList::iterator bit = browser_list_.begin();

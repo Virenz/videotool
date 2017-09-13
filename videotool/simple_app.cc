@@ -69,7 +69,7 @@ void SimpleApp::OnBeforeCommandLineProcessing(const CefString & process_type, Ce
 }
 
 void SimpleApp::OnContextInitialized() {
-  CEF_REQUIRE_UI_THREAD();
+//  CEF_REQUIRE_UI_THREAD();
 
 
 //  CefRefPtr<CefCommandLine> command_line =
