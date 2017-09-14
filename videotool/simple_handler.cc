@@ -41,6 +41,11 @@ SimpleHandler* SimpleHandler::GetInstance() {
   return g_instance;
 }
 
+CefRefPtr<CefBrowser> SimpleHandler::GetBrowser()
+{
+	return this->m_Browser;
+}
+
 void SimpleHandler::OnTitleChange(CefRefPtr<CefBrowser> browser,
                                   const CefString& title) {
   CEF_REQUIRE_UI_THREAD();

@@ -21,6 +21,7 @@ public:
 	// Provide access to the single global instance of this object.
 	static SimpleHandler* GetInstance();
 
+	CefRefPtr<CefBrowser> GetBrowser();
 	// Request that all existing browser windows close.
 	void CloseAllBrowsers(bool force_close);
 

@@ -53,7 +53,22 @@ class SimpleWindowDelegate : public CefWindowDelegate {
 
 }  // namespace
 
-SimpleApp::SimpleApp() {}
+SimpleApp::SimpleApp()
+{
+	m_hParentWindow = NULL;
+	memset(&m_ParentRect, 0, sizeof(m_ParentRect));
+}
+
+void SimpleApp::SetParentWindow(HWND hParentWindow, RECT parentRect)
+{
+	m_hParentWindow = hParentWindow;
+	m_ParentRect = parentRect;
+}
+
+CefRefPtr<SimpleHandler> SimpleApp::GetCefClient()
+{
+	return m_pCefClient;
+}
 
 void SimpleApp::OnBeforeCommandLineProcessing(const CefString & process_type, CefRefPtr<CefCommandLine> command_line)
 {	
@@ -69,7 +84,36 @@ void SimpleApp::OnBeforeCommandLineProcessing(const CefString & process_type, Ce
 }
 
 void SimpleApp::OnContextInitialized() {
-//  CEF_REQUIRE_UI_THREAD();
+  CEF_REQUIRE_UI_THREAD();
+ 
+  // Information used when creating the native window.
+  CefWindowInfo window_info;
+
+  if (m_hParentWindow == NULL)
+  {
+	  window_info.SetAsPopup(NULL, "CefDlgTest");
+  }
+  else {
+	  window_info.SetAsChild(m_hParentWindow, m_ParentRect);
+  }
+
+  m_pCefClient = new SimpleHandler();
+
+  // Specify CEF browser settings here.
+  CefBrowserSettings browser_settings;
+
+  std::string url;
+
+  // Check if a "--url=" value was provided via the command-line. If so, use
+  // that instead of the default URL.
+  CefRefPtr<CefCommandLine> command_line =
+	  CefCommandLine::GetGlobalCommandLine();
+  url = command_line->GetSwitchValue("url");
+  if (url.empty())
+	  url = "http://www.sjzvip.com/jiexi8.php?url=http://v.youku.com/v_show/id_XMjk2MTUyMzMxNg==.html?tpa=dW5pb25faWQ9MTAyMjEzXzEwMDAwNl8wMV8wMQ&from=360sousuo&refer=360sousuo";//c:\\Pokusy\\CEF-Win64\\cefsimple\\page1.html";
+
+							 // Create the first browser window.
+  CefBrowserHost::CreateBrowser(window_info, m_pCefClient, url, browser_settings, NULL);
 
 
 //  CefRefPtr<CefCommandLine> command_line =
@@ -98,7 +142,7 @@ void SimpleApp::OnContextInitialized() {
 //  
 //  url = command_line->GetSwitchValue("url");
 //  if (url.empty())
-//    url = "http://www.sjzvip.com/jiexi8.php?url=http://v.youku.com/v_show/id_XMjk2MTUyMzMxNg==.html?tpa=dW5pb25faWQ9MTAyMjEzXzEwMDAwNl8wMV8wMQ&from=360sousuo&refer=360sousuo";
+//    url = "http://www.sjzvip.com/jiexi6.php?url=http://v.youku.com/v_show/id_XMjk2MTUyMzMxNg==.html?tpa=dW5pb25faWQ9MTAyMjEzXzEwMDAwNl8wMV8wMQ&from=360sousuo&refer=360sousuo";
 //
 //  if (use_views) {
 //    // Create the BrowserView.
@@ -114,7 +158,11 @@ void SimpleApp::OnContextInitialized() {
 //#if defined(OS_WIN)
 //    // On Windows we need to specify certain flags that will be passed to
 //    // CreateWindowEx().
-//    window_info.SetAsPopup(NULL, "cefsimple");
+//	RECT rt;
+//	HWND brown = GetDlgItem(hDlg, IDC_BROWNAREA);
+//	GetClientRect(brown, &rt);
+//	window_info.SetAsChild(brown, rt);
+//    //window_info.SetAsPopup(NULL, "cefsimple");
 //#endif
 //
 //    // Create the first browser window.

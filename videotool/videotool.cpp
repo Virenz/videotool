@@ -55,6 +55,11 @@ int WINAPI WinMain(HINSTANCE hInstance,
 	// Provide CEF with command-line arguments.
 	CefMainArgs main_args(hInstance);
 
+	// SimpleApp implements application-level callbacks for the browser process.
+	// It will create the first browser instance in OnContextInitialized() after
+	// CEF has initialized.
+	CefRefPtr<SimpleApp> app(new SimpleApp);
+
 	// CEF applications have multiple sub-processes (render, plugin, GPU, etc)
 	// that share the same executable. This function checks the command-line and,
 	// if this is a sub-process, executes the appropriate logic.
@@ -71,34 +76,48 @@ int WINAPI WinMain(HINSTANCE hInstance,
 	settings.no_sandbox = true;
 #endif
 
-	// SimpleApp implements application-level callbacks for the browser process.
-	// It will create the first browser instance in OnContextInitialized() after
-	// CEF has initialized.
-	CefRefPtr<SimpleApp> app(new SimpleApp);
-
-	// Initialize CEF.
-	CefInitialize(main_args, settings, app.get(), sandbox_info);
-
 	HWND hdlg = CreateDialog(hInstance, MAKEINTRESOURCE(IDD_VIDEO), NULL, (DLGPROC)DlgProc);
 	if (!hdlg)
 	{
 		return 0;
 	}
 	ShowWindow(hdlg, SW_SHOW);
+	UpdateWindow(hdlg);
 
+
+	HWND hHTMLGroupBox = GetDlgItem(hdlg, IDC_BROWN);
+	RECT htmlRect;
+	WINDOWINFO wndInfo;
+	GetWindowInfo(hdlg, &wndInfo);
+
+	GetWindowRect(hHTMLGroupBox, &htmlRect);
+	htmlRect.left -= wndInfo.rcClient.left;
+	htmlRect.right -= wndInfo.rcClient.left;
+	htmlRect.top -= wndInfo.rcClient.top;
+	htmlRect.bottom -= wndInfo.rcClient.top;
+
+	ShowWindow(hHTMLGroupBox, SW_HIDE);
+
+	app.get()->SetParentWindow(hdlg, htmlRect);
+	
+	// Initialize CEF.
+	CefInitialize(main_args, settings, app.get(), sandbox_info);
+	
 	MSG msg;
 	while (GetMessage(&msg, NULL, 0, 0))
 	{
-		TranslateMessage(&msg);
-		DispatchMessage(&msg);
+		if (!IsDialogMessage(hdlg, &msg))
+		{
+			TranslateMessage(&msg);
+			DispatchMessage(&msg);
+		}
+		CefDoMessageLoopWork();
 	}
 
-	// Run the CEF message loop. This will block until CefQuitMessageLoop() is
-	// called.
-	//CefRunMessageLoop();
+	CefDoMessageLoopWork();
 
 	// Shut down CEF.
-	//CefShutdown();
+	CefShutdown();
 
 	return 0;
 }
@@ -112,18 +131,18 @@ INT_PTR CALLBACK DlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 		// 设置对话框的图标 
 		//SendMessage(hDlg, WM_SETICON, ICON_SMALL, (LPARAM)LoadIcon(hgInst, MAKEINTRESOURCE(IDI_ICON1)));
 		
-		//CefString url = "http://www.sjzvip.com/jiexi8.php?url=http://v.youku.com/v_show/id_XMjk2MTUyMzMxNg==.html?tpa=dW5pb25faWQ9MTAyMjEzXzEwMDAwNl8wMV8wMQ&from=360sousuo&refer=360sousuo";
-		CefString url = "https://www.baidu.com";
-		// SimpleHandler implements browser-level callbacks.
-		CefRefPtr<SimpleHandler> handler(new SimpleHandler);
-		// Specify CEF browser settings here.
-		CefBrowserSettings browser_settings;
-		CefWindowInfo window_info;
-		RECT rt;
-		HWND brown = GetDlgItem(hDlg, IDC_BROWNAREA);
-		GetClientRect(brown, &rt);
-		window_info.SetAsChild(brown, rt);
-		CefBrowserHost::CreateBrowser(window_info, handler, url, browser_settings,NULL);
+		////CefString url = "http://www.sjzvip.com/jiexi8.php?url=http://v.youku.com/v_show/id_XMjk2MTUyMzMxNg==.html?tpa=dW5pb25faWQ9MTAyMjEzXzEwMDAwNl8wMV8wMQ&from=360sousuo&refer=360sousuo";
+		//CefString url = "https://www.baidu.com";
+		//// SimpleHandler implements browser-level callbacks.
+		//CefRefPtr<SimpleHandler> handler(new SimpleHandler);
+		//// Specify CEF browser settings here.
+		//CefBrowserSettings browser_settings;
+		//CefWindowInfo window_info;
+		//RECT rt;
+		//HWND brown = GetDlgItem(hDlg, IDC_BROWNAREA);
+		//GetClientRect(brown, &rt);
+		//window_info.SetAsChild(brown, rt);
+		//CefBrowserHost::CreateBrowser(window_info, handler, url, browser_settings,NULL);
 
 		break;
 	}
