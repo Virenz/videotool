@@ -10,27 +10,29 @@
 
 // Implement application-level callbacks for the browser process.
 class SimpleApp : public CefApp, public CefBrowserProcessHandler {
- public:
-  SimpleApp();
+public:
+	SimpleApp();
 
-  void SetParentWindow(HWND hParentWindow, RECT parentRect);
-  CefRefPtr<SimpleHandler> GetCefClient();
-  // CefApp methods:
-  virtual CefRefPtr<CefBrowserProcessHandler> GetBrowserProcessHandler()
-      OVERRIDE {
-    return this;
-  }
+	void PlayByCef(CefString url);
 
-  // CefBrowserProcessHandler methods:
-  virtual void OnContextInitialized() OVERRIDE;
-  virtual void OnBeforeCommandLineProcessing(const CefString& process_type, CefRefPtr<CefCommandLine> command_line) OVERRIDE;
+	void SetParentWindow(HWND hParentWindow, RECT parentRect);
+	CefRefPtr<SimpleHandler> GetCefClient();
+	// CefApp methods:
+	virtual CefRefPtr<CefBrowserProcessHandler> GetBrowserProcessHandler()
+		OVERRIDE {
+	return this;
+	}
+
+	// CefBrowserProcessHandler methods:
+	virtual void OnContextInitialized() OVERRIDE;
+	virtual void OnBeforeCommandLineProcessing(const CefString& process_type, CefRefPtr<CefCommandLine> command_line) OVERRIDE;
 
 private:
-	 HWND						m_hParentWindow;
-	 RECT						m_ParentRect;
-	 CefRefPtr<SimpleHandler>	m_pCefClient;
-  // Include the default reference counting implementation.
-  IMPLEMENT_REFCOUNTING(SimpleApp);
+	HWND						m_hParentWindow;
+	RECT						m_ParentRect;
+	CefRefPtr<SimpleHandler>	m_pCefClient;
+	// Include the default reference counting implementation.
+	IMPLEMENT_REFCOUNTING(SimpleApp);
 };
 
 #endif  // CEF_TESTS_CEFSIMPLE_SIMPLE_APP_H_

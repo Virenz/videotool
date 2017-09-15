@@ -17,6 +17,10 @@
 #pragma comment(lib, "libcef_dll_wrapper.lib")
 
 INT_PTR CALLBACK DlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+void InitComBox(HWND hDlg);
+
+CefRefPtr<SimpleApp>	app;
+BOOL					m_bCEFInitialized;//是否初始化
 
 // When generating projects with CMake the CEF_USE_SANDBOX value will be defined
 // automatically if using the required compiler version. Pass -DUSE_SANDBOX=OFF
@@ -58,7 +62,7 @@ int WINAPI WinMain(HINSTANCE hInstance,
 	// SimpleApp implements application-level callbacks for the browser process.
 	// It will create the first browser instance in OnContextInitialized() after
 	// CEF has initialized.
-	CefRefPtr<SimpleApp> app(new SimpleApp);
+	app = new SimpleApp;
 
 	// CEF applications have multiple sub-processes (render, plugin, GPU, etc)
 	// that share the same executable. This function checks the command-line and,
@@ -71,6 +75,7 @@ int WINAPI WinMain(HINSTANCE hInstance,
 
 	// Specify CEF global settings here.
 	CefSettings settings;
+	//settings.multi_threaded_message_loop = true;
 
 #if !defined(CEF_USE_SANDBOX)
 	settings.no_sandbox = true;
@@ -82,8 +87,7 @@ int WINAPI WinMain(HINSTANCE hInstance,
 		return 0;
 	}
 	ShowWindow(hdlg, SW_SHOW);
-	UpdateWindow(hdlg);
-
+	//UpdateWindow(hdlg);
 
 	HWND hHTMLGroupBox = GetDlgItem(hdlg, IDC_BROWN);
 	RECT htmlRect;
@@ -97,11 +101,10 @@ int WINAPI WinMain(HINSTANCE hInstance,
 	htmlRect.bottom -= wndInfo.rcClient.top;
 
 	ShowWindow(hHTMLGroupBox, SW_HIDE);
-
 	app.get()->SetParentWindow(hdlg, htmlRect);
 	
 	// Initialize CEF.
-	CefInitialize(main_args, settings, app.get(), sandbox_info);
+	m_bCEFInitialized = CefInitialize(main_args, settings, app.get(), sandbox_info);
 	
 	MSG msg;
 	while (GetMessage(&msg, NULL, 0, 0))
@@ -111,13 +114,11 @@ int WINAPI WinMain(HINSTANCE hInstance,
 			TranslateMessage(&msg);
 			DispatchMessage(&msg);
 		}
-		CefDoMessageLoopWork();
+		if (m_bCEFInitialized)
+		{
+			CefDoMessageLoopWork();
+		}
 	}
-
-	CefDoMessageLoopWork();
-
-	// Shut down CEF.
-	CefShutdown();
 
 	return 0;
 }
@@ -130,45 +131,40 @@ INT_PTR CALLBACK DlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 	{
 		// 设置对话框的图标 
 		//SendMessage(hDlg, WM_SETICON, ICON_SMALL, (LPARAM)LoadIcon(hgInst, MAKEINTRESOURCE(IDI_ICON1)));
-		
-		////CefString url = "http://www.sjzvip.com/jiexi8.php?url=http://v.youku.com/v_show/id_XMjk2MTUyMzMxNg==.html?tpa=dW5pb25faWQ9MTAyMjEzXzEwMDAwNl8wMV8wMQ&from=360sousuo&refer=360sousuo";
-		//CefString url = "https://www.baidu.com";
-		//// SimpleHandler implements browser-level callbacks.
-		//CefRefPtr<SimpleHandler> handler(new SimpleHandler);
-		//// Specify CEF browser settings here.
-		//CefBrowserSettings browser_settings;
-		//CefWindowInfo window_info;
-		//RECT rt;
-		//HWND brown = GetDlgItem(hDlg, IDC_BROWNAREA);
-		//GetClientRect(brown, &rt);
-		//window_info.SetAsChild(brown, rt);
-		//CefBrowserHost::CreateBrowser(window_info, handler, url, browser_settings,NULL);
-
+		InitComBox(hDlg);
 		break;
 	}
-	case WM_SYSCOMMAND:
+	case WM_CLOSE:
 	{
-		if (wParam == SC_CLOSE)
+		if (app != NULL)
 		{
-			//CefQuitMessageLoop();
-			CefShutdown();
-			PostQuitMessage(0);//退出
+			if (app.get()->GetCefClient() != NULL)
+			{
+				app.get()->GetCefClient()->CloseAllBrowsers(false);
+			}
 		}
-		return 0;
+		if (m_bCEFInitialized)
+		{
+			// closing stop work loop
+			m_bCEFInitialized = FALSE;
+			// release CEF app
+			app = NULL;
+			CefShutdown();
+		}
+		EndDialog(hDlg, IDCANCEL);
+		PostQuitMessage(0);//退出
 	}
 	case WM_COMMAND:
 	{
 		switch (LOWORD(wParam))
 		{
-		case IDOK:
-		{
-			break;
-		}
-		case IDCANCEL:
-			EndDialog(hDlg, IDCANCEL);
-			break;
-		default:
-			break;
+			case IDOK:
+			{
+				app.get()->PlayByCef("http://www.sjzvip.com/jiexi3.php?url=http://v.youku.com/v_show/id_XMjk0NjEyNDkwOA==.html?tpa=dW5pb25faWQ9MTAyMjEzXzEwMDAwNl8wMV8wMQ&from=360sousuo&refer=360sousuo");
+				break;
+			}
+			default:
+				break;
 		}
 		break;
 	}
@@ -176,4 +172,20 @@ INT_PTR CALLBACK DlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 		break;
 	}
 	return (INT_PTR)FALSE;
+}
+
+void InitComBox(HWND hDlg)
+{
+	HWND combox = GetDlgItem(hDlg, IDC_INTERFACE);
+
+	TCHAR achTemp[256] = TEXT("Food");
+	TCHAR achTemp_One[256] = TEXT("Dog");
+	TCHAR achTemp_Two[256] = TEXT("Fish");
+	DWORD dwIndex;
+
+	// Get the handle of the food groups combo box.  
+	dwIndex = SendMessage(combox, CB_ADDSTRING, 0, (LPARAM)achTemp);
+	dwIndex = SendMessage(combox, CB_ADDSTRING, 0, (LPARAM)achTemp_One);
+	dwIndex = SendMessage(combox, CB_ADDSTRING, 0, (LPARAM)achTemp_Two);
+	
 }

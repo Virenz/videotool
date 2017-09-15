@@ -21,7 +21,7 @@ SimpleHandler* g_instance = NULL;
 }  // namespace
 
 SimpleHandler::SimpleHandler()
-	: use_views_(false), is_closing_(false) {
+	: use_views_(true), is_closing_(false) {
 	DCHECK(!g_instance);
 	g_instance = this;
 }
