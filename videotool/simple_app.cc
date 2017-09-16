@@ -103,52 +103,21 @@ void SimpleApp::OnBeforeCommandLineProcessing(const CefString & process_type, Ce
 void SimpleApp::OnContextInitialized() 
 {
 	CEF_REQUIRE_UI_THREAD();
-	
-	CefRefPtr<CefCommandLine> command_line = CefCommandLine::GetGlobalCommandLine();
-#if defined(OS_WIN) || defined(OS_LINUX)
-	// Create the browser using the Views framework if "--use-views" is specified
-	// via the command-line. Otherwise, create the browser using the native
-	// platform framework. The Views framework is currently only supported on
-	// Windows and Linux.
-	const bool use_views = command_line->HasSwitch("use-views");
-#else
-	const bool use_views = false;
-#endif
+	m_pCefClient = new SimpleHandler();
 
-	m_pCefClient = new SimpleHandler(use_views);
+	// Information used when creating the native window.
+	CefWindowInfo window_info;
+
+	if (m_hParentWindow == NULL)
+	{
+		window_info.SetAsPopup(NULL, "CefDlgTest");
+	}
+	else {
+		window_info.SetAsChild(m_hParentWindow, m_ParentRect);
+	}
+
 	// Specify CEF browser settings here.
 	CefBrowserSettings browser_settings;
 
-	std::string url;
-
-	// Check if a "--url=" value was provided via the command-line. If so, use
-	// that instead of the default URL.
-	url = command_line->GetSwitchValue("url");
-	if (url.empty())
-		url = "file:///window.html";
-
-	if (use_views) 
-	{
-		// Create the BrowserView.
-		CefRefPtr<CefBrowserView> browser_view = CefBrowserView::CreateBrowserView(
-			m_pCefClient.get(), url, browser_settings, NULL, NULL);
-
-		// Create the Window. It will show itself after creation.
-		CefWindow::CreateTopLevelWindow(new SimpleWindowDelegate(browser_view));
-	}
-	else 
-	{
-		// Information used when creating the native window.
-		CefWindowInfo window_info;
-
-		if (m_hParentWindow == NULL)
-		{
-			window_info.SetAsPopup(NULL, "CefDlgTest");
-		}
-		else 
-		{
-			window_info.SetAsChild(m_hParentWindow, m_ParentRect);
-		}
-		CefBrowserHost::CreateBrowser(window_info, m_pCefClient.get(), url, browser_settings, NULL);
-	}
+	CefBrowserHost::CreateBrowser(window_info, m_pCefClient.get(), "", browser_settings, NULL);
 }
