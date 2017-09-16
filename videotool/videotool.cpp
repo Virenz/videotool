@@ -12,6 +12,7 @@
 #include "include/cef_sandbox_win.h"
 #include "simple_app.h"
 #include "simple_handler.h"
+#include "jiekou.h"
 
 #pragma comment(lib, "libcef.lib")
 #pragma comment(lib, "libcef_dll_wrapper.lib")
@@ -21,6 +22,7 @@ void InitComBox(HWND hDlg);
 
 CefRefPtr<SimpleApp>	app;
 BOOL					m_bCEFInitialized;//是否初始化
+std::multimap<std::string, std::string> jiexiurls;
 
 // When generating projects with CMake the CEF_USE_SANDBOX value will be defined
 // automatically if using the required compiler version. Pass -DUSE_SANDBOX=OFF
@@ -87,7 +89,6 @@ int WINAPI WinMain(HINSTANCE hInstance,
 		return 0;
 	}
 	ShowWindow(hdlg, SW_SHOW);
-	//UpdateWindow(hdlg);
 
 	HWND hHTMLGroupBox = GetDlgItem(hdlg, IDC_BROWN);
 	RECT htmlRect;
@@ -109,6 +110,11 @@ int WINAPI WinMain(HINSTANCE hInstance,
 	MSG msg;
 	while (GetMessage(&msg, NULL, 0, 0))
 	{
+		if (msg.message == WM_KEYDOWN && GetKeyState('A') && GetKeyState(VK_CONTROL))
+		{
+			//Edit_SetSel(GetDlgItem(hdlg, IDC_URL), 0, -1);
+			SendMessage(GetDlgItem(hdlg, IDC_URL), EM_SETSEL, 0, -1);
+		}
 		if (!IsDialogMessage(hdlg, &msg))
 		{
 			TranslateMessage(&msg);
@@ -160,7 +166,21 @@ INT_PTR CALLBACK DlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 		{
 			case IDOK:
 			{
-				app.get()->PlayByCef("http://www.sjzvip.com/jiexi3.php?url=http://v.youku.com/v_show/id_XMjk0NjEyNDkwOA==.html?tpa=dW5pb25faWQ9MTAyMjEzXzEwMDAwNl8wMV8wMQ&from=360sousuo&refer=360sousuo");
+				// 获取解析借口
+				HWND combox = GetDlgItem(hDlg, IDC_INTERFACE);
+				CHAR szBuff[200];
+				ZeroMemory(szBuff, sizeof(szBuff));
+				SendMessageA(combox, CB_GETLBTEXT, SendMessage(combox, CB_GETCURSEL, 0, 0), (LPARAM)szBuff);
+				std::string jiexiurl = jiexiurls.find(szBuff)->second;
+
+				// 获取需要播放视频的url
+				ZeroMemory(szBuff, sizeof(szBuff));
+				GetDlgItemTextA(hDlg, IDC_URL, szBuff, 200);
+				std::string url;
+				url.append(jiexiurl + szBuff);
+				
+				// 启动播放该视频
+				app.get()->PlayByCef(url);
 				break;
 			}
 			default:
@@ -176,16 +196,19 @@ INT_PTR CALLBACK DlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 
 void InitComBox(HWND hDlg)
 {
+	// 清空jiexiurls数据
+	jiexiurls.clear();
+
 	HWND combox = GetDlgItem(hDlg, IDC_INTERFACE);
 
-	TCHAR achTemp[256] = TEXT("Food");
-	TCHAR achTemp_One[256] = TEXT("Dog");
-	TCHAR achTemp_Two[256] = TEXT("Fish");
-	DWORD dwIndex;
-
-	// Get the handle of the food groups combo box.  
-	dwIndex = SendMessage(combox, CB_ADDSTRING, 0, (LPARAM)achTemp);
-	dwIndex = SendMessage(combox, CB_ADDSTRING, 0, (LPARAM)achTemp_One);
-	dwIndex = SendMessage(combox, CB_ADDSTRING, 0, (LPARAM)achTemp_Two);
-	
+	JieKou* jiekouurls = new JieKou();
+	std::multimap<std::string, std::string>::iterator iter = jiekouurls->getJieKou().begin();
+	while (iter != jiekouurls->getJieKou().end()) //#1
+	{
+		jiexiurls.insert(*iter);
+		SendMessageA(combox, CB_ADDSTRING, 0, (LPARAM)iter->first.c_str());
+		iter++;
+	}
+	SendMessage(combox, CB_SETCURSEL, 0, 0);
+	delete jiekouurls;
 }
