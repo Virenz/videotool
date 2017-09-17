@@ -63,6 +63,12 @@
     <ClInclude Include="json\json\writer.h">
       <Filter>头文件\json\json</Filter>
     </ClInclude>
+    <ClInclude Include="httptool.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="magparse.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="videotool.cpp">
@@ -88,6 +94,12 @@
     </ClCompile>
     <ClCompile Include="json\json_writer.cpp">
       <Filter>头文件\json</Filter>
+    </ClCompile>
+    <ClCompile Include="httptool.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="magparse.cpp">
+      <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -1,5 +1,4 @@
-#include "stdafx.h"
-#include "HttpTool.h"
+#include "httptool.h"
 
 HttpTool::HttpTool()
 {
@@ -74,7 +73,7 @@ bool HttpTool::httpGet(const char * sourses)
 			{
 				printf("%s memory retrieved\n", chunk.memory);
 				isSuccess = true;
-			}
+			}	
 		}
 
 		/* always cleanup */
@@ -152,4 +151,3 @@ void HttpTool::cleanChunk()
 	chunk.memory = NULL;
 	chunk.size = 0;
 }
-

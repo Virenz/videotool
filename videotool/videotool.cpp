@@ -1,27 +1,25 @@
-// videotool.cpp: 定义控制台应用程序的入口点。
-//
-
-// Copyright (c) 2013 The Chromium Embedded Framework Authors. All rights
-// reserved. Use of this source code is governed by a BSD-style license that
-// can be found in the LICENSE file.
-
 #include <windows.h>
 #include <tchar.h>
+#include <thread>
+#include <commctrl.h>
 #include "resource.h"
 
 #include "include/cef_sandbox_win.h"
 #include "simple_app.h"
 #include "simple_handler.h"
 #include "jiekou.h"
+#include "magparse.h"
 
 #pragma comment(lib, "libcef.lib")
 #pragma comment(lib, "libcef_dll_wrapper.lib")
 
 INT_PTR CALLBACK DlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 void InitComBox(HWND hDlg);
+void performActions(HWND hwnd);
+int InitTreeControl(HWND hwnd, MagParse *uidatas);
 
 CefRefPtr<SimpleApp>	app;
-BOOL					m_bCEFInitialized;//是否初始化
+BOOL					m_bCEFInitialized;
 std::multimap<std::string, std::string> jiexiurls;
 
 // When generating projects with CMake the CEF_USE_SANDBOX value will be defined
@@ -135,7 +133,6 @@ INT_PTR CALLBACK DlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 	{
 	case WM_INITDIALOG:
 	{
-		// 设置对话框的图标 
 		//SendMessage(hDlg, WM_SETICON, ICON_SMALL, (LPARAM)LoadIcon(hgInst, MAKEINTRESOURCE(IDI_ICON1)));
 		InitComBox(hDlg);
 		break;
@@ -157,7 +154,7 @@ INT_PTR CALLBACK DlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 			app = NULL;
 			CefShutdown();
 		}
-		EndDialog(hDlg, IDCANCEL);
+
 		PostQuitMessage(0);//退出
 	}
 	case WM_COMMAND:
@@ -179,19 +176,75 @@ INT_PTR CALLBACK DlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 				std::string url;
 				url.append(jiexiurl + szBuff);
 				
-				// 启动播放该视频
+				//启动播放该视频
 				app.get()->PlayByCef(url);
 				break;
+			}
+			case IDC_START_SEARCH:
+			{
+				// 清理视频信息数据
+				HWND m_tree = GetDlgItem(hDlg, IDC_VIDEOINFOS);
+				TreeView_DeleteAllItems(m_tree);
+
+				std::thread action(performActions, hDlg);
+				action.detach();
 			}
 			default:
 				break;
 		}
 		break;
 	}
+	case WM_NOTIFY: {
+		LPNMHDR lpnmh = (LPNMHDR)lParam;
+		if (NM_DBLCLK == lpnmh->code)
+		{
+			DWORD dwPos = GetMessagePos();
+			POINT pt;
+			pt.x = LOWORD(dwPos);
+			pt.y = HIWORD(dwPos);
+			ScreenToClient(lpnmh->hwndFrom, &pt);
+			TVHITTESTINFO ht = { 0 };
+			ht.pt = pt;
+			ht.flags = TVHT_ONITEM;
+			HTREEITEM hItem = TreeView_HitTest(lpnmh->hwndFrom, &ht);
+			TreeView_SelectItem(lpnmh->hwndFrom, hItem);
+			TVITEM ti = { 0 };
+			ti.mask = TVIF_HANDLE | TVIF_TEXT | TVS_SHOWSELALWAYS;
+			TCHAR buf[MAX_PATH] = { 0 };
+			int index = 0;
+			ti.cchTextMax = MAX_PATH;
+			ti.pszText = buf;
+			ti.hItem = hItem;
+			
+			TreeView_GetItem(lpnmh->hwndFrom, &ti);
+
+			if (!TreeView_GetChild(lpnmh->hwndFrom, hItem))
+			{
+				SetDlgItemText(hDlg, IDC_URL, buf);
+			}
+		}
+	}
 	default:
 		break;
 	}
 	return (INT_PTR)FALSE;
+}
+
+void performActions(HWND hwnd)
+{
+	// 唤醒执行 按钮
+	EnableWindow(GetDlgItem(hwnd, IDC_START_SEARCH), false);
+
+	char search_str[MAX_PATH];
+	GetDlgItemTextA(hwnd, IDC_SEARCH, search_str, MAX_PATH);
+
+	MagParse* magParse = new MagParse();
+	magParse->GetVideoInfos(search_str);
+	InitTreeControl(hwnd, magParse);
+	delete magParse;
+
+	// 唤醒执行 按钮
+	EnableWindow(GetDlgItem(hwnd, IDC_START_SEARCH), true);
 }
 
 void InitComBox(HWND hDlg)
@@ -211,4 +264,40 @@ void InitComBox(HWND hDlg)
 	}
 	SendMessage(combox, CB_SETCURSEL, 0, 0);
 	delete jiekouurls;
+}
+
+int InitTreeControl(HWND hdlg, MagParse *uidatas)
+{
+	auto infos = uidatas->getMags();
+	for (auto sp : infos)
+	{
+		TV_ITEM item;
+		item.mask = TVIF_TEXT;
+		item.cchTextMax = 10;
+		item.pszText = (LPWSTR)sp.name.c_str();
+
+		TV_INSERTSTRUCT insert;
+		insert.hParent = TVI_ROOT;
+		insert.hInsertAfter = TVI_LAST;
+		insert.item = item;
+
+		HWND m_tree = GetDlgItem(hdlg, IDC_VIDEOINFOS);
+		HTREEITEM Selected = TreeView_InsertItem(m_tree, &insert);
+		for (int index = 0; index < sp.totalNum; index++) //遍历json成员
+		{
+			TV_ITEM item1;
+			item1.mask = TVIF_TEXT | TVIF_PARAM | TVS_HASLINES | TVS_LINESATROOT | TVS_SHOWSELALWAYS;
+			item1.cchTextMax = 2;
+			item1.pszText = (LPTSTR)sp.resLinks[index].c_str();
+
+			TV_INSERTSTRUCT insert1;
+			insert1.hParent = Selected;
+			insert1.hInsertAfter = TVI_LAST;
+			insert1.item = item1;
+
+			HTREEITEM root2 = TreeView_InsertItem(m_tree, &insert1);
+		}
+	}
+
+	return 0;
 }

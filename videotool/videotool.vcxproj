@@ -152,6 +152,7 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="httptool.h" />
     <ClInclude Include="jiekou.h" />
     <ClInclude Include="json\json\autolink.h" />
     <ClInclude Include="json\json\config.h" />
@@ -162,15 +163,18 @@
     <ClInclude Include="json\json\value.h" />
     <ClInclude Include="json\json\writer.h" />
     <ClInclude Include="json\json_batchallocator.h" />
+    <ClInclude Include="magparse.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="simple_app.h" />
     <ClInclude Include="simple_handler.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="httptool.cpp" />
     <ClCompile Include="jiekou.cpp" />
     <ClCompile Include="json\json_reader.cpp" />
     <ClCompile Include="json\json_value.cpp" />
     <ClCompile Include="json\json_writer.cpp" />
+    <ClCompile Include="magparse.cpp" />
     <ClCompile Include="simple_app.cc" />
     <ClCompile Include="simple_handler.cc" />
     <ClCompile Include="simple_handler_win.cc" />

@@ -1,8 +1,7 @@
 #pragma once
 
-#include <string>
-#include "curl\curl.h"
-#pragma comment(lib, "libcurl_a.lib") 
+#include "curl/curl.h"
+#pragma comment(lib, "libcurl.lib") 
 
 typedef struct MemoryStruct {
 	char *memory;
@@ -20,7 +19,6 @@ public:
 	char* getReponseHTML();
 	void cleanChunk();
 
-	private:
-		_MEMORYSTRUNCT chunk;
+private:
+	_MEMORYSTRUNCT chunk;
 };
-
