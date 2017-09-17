@@ -154,8 +154,8 @@ INT_PTR CALLBACK DlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 			app = NULL;
 			CefShutdown();
 		}
-
 		PostQuitMessage(0);//退出
+		EndDialog(hDlg, IDCANCEL);
 	}
 	case WM_COMMAND:
 	{

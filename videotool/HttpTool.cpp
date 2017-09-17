@@ -56,8 +56,11 @@ bool HttpTool::httpGet(const char * sourses)
 		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteData);
 		curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&chunk);
 
-		/* Perform the request, res will get the return code */
+		// 设置ssl
+		curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
+		curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
 
+		/* Perform the request, res will get the return code */
 		res = curl_easy_perform(curl);
 		/* Check for errors */
 		if (res != CURLE_OK)
@@ -105,6 +108,10 @@ bool HttpTool::httpPost(const char * url, const char * strpost)
 		//通过write_data方法将联网返回数据写入到data中
 		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteData);
 		curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&chunk);
+
+		// 设置ssl
+		curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
+		curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
 
 		/**
 		* 当多个线程都使用超时处理的时候，同时主线程中有sleep或是wait等操作。

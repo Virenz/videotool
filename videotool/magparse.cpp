@@ -15,11 +15,10 @@ std::vector<VideoInfo>& MagParse::getMags()
 	return this->mags;
 }
 
-std::wstring MagParse::GetHtmlPage(char* url)
+std::wstring MagParse::GetHtmlPage(char* url, int url_id)
 {
 	std::wstring magunicodeHtml;
-	// 使用搜狐的搜寻接口
-	char* host = "http://so.tv.sohu.com/mts?box=1&wd=";
+
 	int len = 0;
 	char pBuf[256];
 	BOOL isSucess = UrlEncode(url, pBuf, 256, true);
@@ -27,10 +26,11 @@ std::wstring MagParse::GetHtmlPage(char* url)
 	{
 		return magunicodeHtml;
 	}
-	std::string searcher_url = FormatString("%s%s", host, pBuf);
+	std::string searcher_url = FormatString(search_url[url_id], pBuf);
 
 	HttpTool* httpTool = new HttpTool();
 	//http://so.tv.sohu.com/mts?box=1&wd=%E8%A1%80%E6%97%8F
+	//https://v.qq.com/x/search/?q=%E6%97%A0%E5%BF%83%E6%B3%95%E5%B8%882&stag=0
 	bool isGet = httpTool->httpGet(searcher_url.c_str());
 	if (!isGet)
 		return magunicodeHtml;
@@ -44,13 +44,24 @@ std::wstring MagParse::GetHtmlPage(char* url)
 //获取视频信息
 std::vector<VideoInfo> MagParse::GetVideoInfos(char * search_name)
 {
-	std::wstring html = GetHtmlPage(search_name);
+	/*
+	GetHtmlPage 传入搜索关键字和url_id(表示使用的视频网站接口)
+	0: 搜狐视频
+	1: 腾讯视频
+	*/
 
+	BOOL isSearch = FALSE;
+
+	std::wstring html;
 	int nPos = 0;
 	int n = 0;
-	int flag = 1;
+
+	//-----------------------使用搜狐视频进行搜索-----------------------------------
+	html = GetHtmlPage(search_name, 0);
+
 	while ((nPos = html.find(L"data-title", n)) != -1)
 	{
+		isSearch = TRUE;
 		// 为后面数据find进行位移
 		n = nPos + 1;
 
@@ -64,25 +75,99 @@ std::vector<VideoInfo> MagParse::GetVideoInfos(char * search_name)
 
 		// 获取视频链接源码块
 		nStartPos = html.rfind(L"series cfix", nPos);
-		nEndPos = html.find(L"</div>", nStartPos);
-		std::wstring contentHtml = html.substr(nStartPos + 1, nEndPos - nStartPos);
-
-		// 正则表达获取该视频链接
-		const std::wregex pattern(L"//tv.sohu.com/[0-9]{8}/\\w{10}.shtml");
-		std::wsmatch result;
-
-		for (std::wsregex_iterator it(contentHtml.begin(), contentHtml.end(), pattern), end;     //end是尾后迭代器，regex_iterator是regex_iterator的string类型的版本
-			it != end;
-			++it)
+		if (nStartPos < 0)	// 获取电影
 		{
-			vdinfo.resLinks.push_back(it->str().insert(0, L"http:"));
+			nStartPos = html.find(L"data-url", nPos);
+			nStartPos = nStartPos + 10;
+			nEndPos = html.find(L"\"", nStartPos);
+			std::wstring strreslink = html.substr(nStartPos, nEndPos - nStartPos);
+			vdinfo.resLinks.push_back(strreslink.insert(0, L"http:"));
 		}
-		
+		else //获取电视剧
+		{
+			nEndPos = html.find(L"</div>", nStartPos);
+			std::wstring contentHtml = html.substr(nStartPos + 1, nEndPos - nStartPos);
+
+			// 正则表达获取该视频链接
+			const std::wregex pattern(L"//tv.sohu.com/[0-9]{8}/\\w{10}.shtml");
+			std::wsmatch result;
+
+			for (std::wsregex_iterator it(contentHtml.begin(), contentHtml.end(), pattern), end;     //end是尾后迭代器，regex_iterator是regex_iterator的string类型的版本
+				it != end;
+				++it)
+			{
+				vdinfo.resLinks.push_back(it->str().insert(0, L"http:"));
+			}
+		}
+
 		// 获取视频集数
 		vdinfo.totalNum = vdinfo.resLinks.size();
 
 		mags.push_back(vdinfo);
 	}
+	// 清理使用变量
+	html.clear();
+	nPos = 0;
+	n = 0;
+
+	if (isSearch)
+	{
+		return mags;
+	}
+
+	// -----------------------使用腾讯视频进行搜索-----------------------------------
+	html = GetHtmlPage(search_name, 1);
+
+	while ((nPos = html.find(L"_playlist", n)) != -1)
+	{
+		isSearch = TRUE;
+		// 为后面数据find进行位移
+		n = nPos + 1;
+
+		VideoInfo vdinfo;
+
+		// 获取关键字搜索结果的内容块
+		int nEndPos = html.find(L"tip_download", nPos);
+		std::wstring strreslink = html.substr(n, nEndPos - n);
+
+		// 获取视频名称
+		int nStartPos = strreslink.find(L"title: \'", 0);
+		if (nStartPos != -1)
+		{
+			nStartPos = nStartPos + 8;
+			nEndPos = strreslink.find(L"\'", nStartPos);
+			std::wstring strname = strreslink.substr(nStartPos, nEndPos - nStartPos);
+			vdinfo.name = strname;
+
+			// 正则表达获取该视频链接
+			const std::wregex pattern(L"((http|ftp|https)://)(([a-zA-Z0-9\._-]+\.[a-zA-Z]{2,6})|([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}))(:[0-9]{1,4})*(/[a-zA-Z0-9\&%_\./-~-]*)?");
+			std::wsmatch result;
+
+			for (std::wsregex_iterator it(strreslink.begin(), strreslink.end(), pattern), end;     //end是尾后迭代器，regex_iterator是regex_iterator的string类型的版本
+				it != end;
+				++it)
+			{
+				vdinfo.resLinks.push_back(it->str());
+			}
+
+			// 获取视频集数
+			vdinfo.totalNum = vdinfo.resLinks.size();
+
+			mags.push_back(vdinfo);
+		}
+
+		
+	}
+	// 清理使用变量
+	html.clear();
+	nPos = 0;
+	n = 0;
+
+	if (isSearch)
+	{
+		return mags;
+	}
+
 	return mags;
 }
 
