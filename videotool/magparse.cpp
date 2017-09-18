@@ -129,33 +129,39 @@ std::vector<VideoInfo> MagParse::GetVideoInfos(char * search_name)
 		int nEndPos = html.find(L"tip_download", nPos);
 		std::wstring strreslink = html.substr(n, nEndPos - n);
 
-		// 获取视频名称
-		int nStartPos = strreslink.find(L"title: \'", 0);
-		if (nStartPos != -1)
+		// 如果含有未展开的标签，需要单独进行
+		if(strreslink.find(L"video:poster_num_unfold") != -1)
 		{
-			nStartPos = nStartPos + 8; // 8(title: ')
-			nEndPos = strreslink.find(L"\'", nStartPos);
-			std::wstring strname = strreslink.substr(nStartPos, nEndPos - nStartPos);
-			vdinfo.name = strname;
-
-			// 正则表达获取该视频链接
-			const std::wregex pattern(L"href=\"(((http|ftp|https)://)(([a-zA-Z0-9\._-]+\.[a-zA-Z]{2,6})|([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}))(:[0-9]{1,4})*(/[a-zA-Z0-9\&%_\./-~-]*)?)([^\.]*)video:poster_(num|play)([^\.]*|[^\u4e00-\u9fa5]*)>([0-9\u4e00-\u9fa5]{1,})<");
-			std::wsmatch result;
-
-			for (std::wsregex_iterator it(strreslink.begin(), strreslink.end(), pattern), end;     //end是尾后迭代器，regex_iterator是regex_iterator的string类型的版本
-				it != end;
-				++it)
-			{
-				vdinfo.resLinks.insert(std::pair<std::wstring, std::wstring>((*it)[(*it).size()-1].str(), (*it)[1].str()));
-				//insert(std::pair<std::string, std::string>(key,value));
-			}
-
-			// 获取视频集数
-			vdinfo.totalNum = vdinfo.resLinks.size();
-
-			mags.push_back(vdinfo);
 		}
+		else
+		{
+			// 获取视频名称
+			int nStartPos = strreslink.find(L"title: \'", 0);
+			if (nStartPos != -1)
+			{
+				nStartPos = nStartPos + 8; // 8(title: ')
+				nEndPos = strreslink.find(L"\'", nStartPos);
+				std::wstring strname = strreslink.substr(nStartPos, nEndPos - nStartPos);
+				vdinfo.name = strname;
 
+				// 正则表达获取该视频链接
+				const std::wregex pattern(L"href=\"(((http|ftp|https)://)(([a-zA-Z0-9\._-]+\.[a-zA-Z]{2,6})|([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}))(:[0-9]{1,4})*(/[a-zA-Z0-9\&%_\./-~-]*)?)([^\.]*)video:poster_([^\.]*|[^\u4e00-\u9fa5]*)(num|play)\"([^0-9\u4e00-\u9fa5]*)>([0-9\u4e00-\u9fa5]{1,})<");
+				std::wsmatch result;
+
+				for (std::wsregex_iterator it(strreslink.begin(), strreslink.end(), pattern), end;     //end是尾后迭代器，regex_iterator是regex_iterator的string类型的版本
+					it != end;
+					++it)
+				{
+					vdinfo.resLinks.insert(std::pair<std::wstring, std::wstring>((*it)[(*it).size() - 1].str(), (*it)[1].str()));
+					//insert(std::pair<std::string, std::string>(key,value));
+				}
+
+				// 获取视频集数
+				vdinfo.totalNum = vdinfo.resLinks.size();
+
+				mags.push_back(vdinfo);
+			}
+		}
 		
 	}
 	// 清理使用变量

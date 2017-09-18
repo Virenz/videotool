@@ -5,11 +5,18 @@
 #include <string>
 #include <map>
 
+// 定义Key长度排序
+struct CmpByKeyLength {
+	bool operator()(const std::wstring& k1, const std::wstring& k2) {
+		return true;
+	}
+};
+
 typedef struct tagVideoInfo
 {
 	int							totalNum;				//集数
 	std::wstring				name;					//片名
-	std::map<std::wstring, std::wstring>	resLinks;				//资源名称
+	std::map<std::wstring, std::wstring, CmpByKeyLength>	resLinks;				//资源名称
 }VideoInfo;
 
 class MagParse
