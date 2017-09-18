@@ -6,10 +6,9 @@ MagParse::MagParse()
 
 MagParse::~MagParse()
 {
-	
 }
 
-std::vector<VideoInfo>& MagParse::getMags()
+std::vector<VideoInfo> MagParse::getMags()
 {
 	// TODO: 在此处插入 return 语句
 	return this->mags;
@@ -56,64 +55,64 @@ std::vector<VideoInfo> MagParse::GetVideoInfos(char * search_name)
 	int nPos = 0;
 	int n = 0;
 
-	//-----------------------使用搜狐视频进行搜索-----------------------------------
-	html = GetHtmlPage(search_name, 0);
+	////-----------------------使用搜狐视频进行搜索-----------------------------------
+	//html = GetHtmlPage(search_name, 0);
 
-	while ((nPos = html.find(L"data-title", n)) != -1)
-	{
-		isSearch = TRUE;
-		// 为后面数据find进行位移
-		n = nPos + 1;
+	//while ((nPos = html.find(L"data-title", n)) != -1)
+	//{
+	//	isSearch = TRUE;
+	//	// 为后面数据find进行位移
+	//	n = nPos + 1;
 
-		VideoInfo vdinfo;
+	//	VideoInfo vdinfo;
 
-		// 获取视频名称
-		int nStartPos = nPos + 12;
-		int nEndPos = html.find(L"\"", nStartPos);
-		std::wstring strname = html.substr(nStartPos, nEndPos - nStartPos);
-		vdinfo.name = strname;
+	//	// 获取视频名称
+	//	int nStartPos = nPos + 12;
+	//	int nEndPos = html.find(L"\"", nStartPos);
+	//	std::wstring strname = html.substr(nStartPos, nEndPos - nStartPos);
+	//	vdinfo.name = strname;
 
-		// 获取视频链接源码块
-		nStartPos = html.rfind(L"series cfix", nPos);
-		if (nStartPos < 0)	// 获取电影
-		{
-			nStartPos = html.find(L"data-url", nPos);
-			nStartPos = nStartPos + 10;
-			nEndPos = html.find(L"\"", nStartPos);
-			std::wstring strreslink = html.substr(nStartPos, nEndPos - nStartPos);
-			vdinfo.resLinks.push_back(strreslink.insert(0, L"http:"));
-		}
-		else //获取电视剧
-		{
-			nEndPos = html.find(L"</div>", nStartPos);
-			std::wstring contentHtml = html.substr(nStartPos + 1, nEndPos - nStartPos);
+	//	// 获取视频链接源码块
+	//	nStartPos = html.rfind(L"series cfix", nPos);
+	//	if (nStartPos < 0)	// 获取电影
+	//	{
+	//		nStartPos = html.find(L"data-url", nPos);
+	//		nStartPos = nStartPos + 10;
+	//		nEndPos = html.find(L"\"", nStartPos);
+	//		std::wstring strreslink = html.substr(nStartPos, nEndPos - nStartPos);
+	//		vdinfo.resLinks.push_back(strreslink.insert(0, L"http:"));
+	//	}
+	//	else //获取电视剧
+	//	{
+	//		nEndPos = html.find(L"</div>", nStartPos);
+	//		std::wstring contentHtml = html.substr(nStartPos + 1, nEndPos - nStartPos);
 
-			// 正则表达获取该视频链接
-			const std::wregex pattern(L"//tv.sohu.com/[0-9]{8}/\\w{10}.shtml");
-			std::wsmatch result;
+	//		// 正则表达获取该视频链接
+	//		const std::wregex pattern(L"//tv.sohu.com/[0-9]{8}/\\w{10}.shtml");
+	//		std::wsmatch result;
 
-			for (std::wsregex_iterator it(contentHtml.begin(), contentHtml.end(), pattern), end;     //end是尾后迭代器，regex_iterator是regex_iterator的string类型的版本
-				it != end;
-				++it)
-			{
-				vdinfo.resLinks.push_back(it->str().insert(0, L"http:"));
-			}
-		}
+	//		for (std::wsregex_iterator it(contentHtml.begin(), contentHtml.end(), pattern), end;     //end是尾后迭代器，regex_iterator是regex_iterator的string类型的版本
+	//			it != end;
+	//			++it)
+	//		{
+	//			vdinfo.resLinks.push_back(it->str().insert(0, L"http:"));
+	//		}
+	//	}
 
-		// 获取视频集数
-		vdinfo.totalNum = vdinfo.resLinks.size();
+	//	// 获取视频集数
+	//	vdinfo.totalNum = vdinfo.resLinks.size();
 
-		mags.push_back(vdinfo);
-	}
-	// 清理使用变量
-	html.clear();
-	nPos = 0;
-	n = 0;
+	//	mags.push_back(vdinfo);
+	//}
+	//// 清理使用变量
+	//html.clear();
+	//nPos = 0;
+	//n = 0;
 
-	if (isSearch)
-	{
-		return mags;
-	}
+	//if (isSearch)
+	//{
+	//	return mags;
+	//}
 
 	// -----------------------使用腾讯视频进行搜索-----------------------------------
 	html = GetHtmlPage(search_name, 1);
@@ -134,20 +133,21 @@ std::vector<VideoInfo> MagParse::GetVideoInfos(char * search_name)
 		int nStartPos = strreslink.find(L"title: \'", 0);
 		if (nStartPos != -1)
 		{
-			nStartPos = nStartPos + 8;
+			nStartPos = nStartPos + 8; // 8(title: ')
 			nEndPos = strreslink.find(L"\'", nStartPos);
 			std::wstring strname = strreslink.substr(nStartPos, nEndPos - nStartPos);
 			vdinfo.name = strname;
 
 			// 正则表达获取该视频链接
-			const std::wregex pattern(L"((http|ftp|https)://)(([a-zA-Z0-9\._-]+\.[a-zA-Z]{2,6})|([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}))(:[0-9]{1,4})*(/[a-zA-Z0-9\&%_\./-~-]*)?");
+			const std::wregex pattern(L"href=\"(((http|ftp|https)://)(([a-zA-Z0-9\._-]+\.[a-zA-Z]{2,6})|([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}))(:[0-9]{1,4})*(/[a-zA-Z0-9\&%_\./-~-]*)?)([^\.]*)video:poster_(num|play)([^\.]*|[^\u4e00-\u9fa5]*)>([0-9\u4e00-\u9fa5]{1,})<");
 			std::wsmatch result;
 
 			for (std::wsregex_iterator it(strreslink.begin(), strreslink.end(), pattern), end;     //end是尾后迭代器，regex_iterator是regex_iterator的string类型的版本
 				it != end;
 				++it)
 			{
-				vdinfo.resLinks.push_back(it->str());
+				vdinfo.resLinks.insert(std::pair<std::wstring, std::wstring>((*it)[(*it).size()-1].str(), (*it)[1].str()));
+				//insert(std::pair<std::string, std::string>(key,value));
 			}
 
 			// 获取视频集数

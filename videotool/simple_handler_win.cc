@@ -11,5 +11,6 @@
 void SimpleHandler::PlatformTitleChange(CefRefPtr<CefBrowser> browser,
                                         const CefString& title) {
   CefWindowHandle hwnd = browser->GetHost()->GetWindowHandle();
+  //SetDlgItemText(hwnd, IDC_VIDEOTITLE, std::wstring(title).c_str());
   SetWindowText(hwnd, std::wstring(title).c_str());
 }

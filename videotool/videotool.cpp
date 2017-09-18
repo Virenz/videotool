@@ -1,3 +1,4 @@
+#pragma once
 #include <windows.h>
 #include <tchar.h>
 #include <thread>
@@ -13,6 +14,7 @@
 #pragma comment(lib, "libcef.lib")
 #pragma comment(lib, "libcef_dll_wrapper.lib")
 
+
 INT_PTR CALLBACK DlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 void InitComBox(HWND hDlg);
 void performActions(HWND hwnd);
@@ -21,6 +23,8 @@ int InitTreeControl(HWND hwnd, MagParse *uidatas);
 CefRefPtr<SimpleApp>	app;
 BOOL					m_bCEFInitialized;
 std::multimap<std::string, std::string> jiexiurls;
+WCHAR					test[50] = L"testllllllllllllllll";
+
 
 // When generating projects with CMake the CEF_USE_SANDBOX value will be defined
 // automatically if using the required compiler version. Pass -DUSE_SANDBOX=OFF
@@ -209,18 +213,20 @@ INT_PTR CALLBACK DlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 			HTREEITEM hItem = TreeView_HitTest(lpnmh->hwndFrom, &ht);
 			TreeView_SelectItem(lpnmh->hwndFrom, hItem);
 			TVITEM ti = { 0 };
-			ti.mask = TVIF_HANDLE | TVIF_TEXT | TVS_SHOWSELALWAYS;
+			ti.mask = TVIF_TEXT | TVIF_PARAM | TVS_HASLINES | TVS_LINESATROOT | TVS_SHOWSELALWAYS;;
 			TCHAR buf[MAX_PATH] = { 0 };
 			int index = 0;
 			ti.cchTextMax = MAX_PATH;
 			ti.pszText = buf;
 			ti.hItem = hItem;
-			
+		
 			TreeView_GetItem(lpnmh->hwndFrom, &ti);
 
-			if (!TreeView_GetChild(lpnmh->hwndFrom, hItem))
+			if (!TreeView_GetChild(lpnmh->hwndFrom, hItem)&&ti.lParam > 0)
 			{
-				SetDlgItemText(hDlg, IDC_URL, buf);
+				TCHAR* url = (TCHAR*)(ti.lParam);
+				SetDlgItemText(hDlg, IDC_URL, url);
+				delete url;
 			}
 		}
 	}
@@ -283,12 +289,14 @@ int InitTreeControl(HWND hdlg, MagParse *uidatas)
 
 		HWND m_tree = GetDlgItem(hdlg, IDC_VIDEOINFOS);
 		HTREEITEM Selected = TreeView_InsertItem(m_tree, &insert);
-		for (int index = 0; index < sp.totalNum; index++) //遍历json成员
+		//for (int index = 0; index < sp.totalNum; index++) //遍历json成员
+		for(std::multimap<std::wstring, std::wstring>::iterator iter = sp.resLinks.begin(); iter != sp.resLinks.end(); ++iter)
 		{
 			TV_ITEM item1;
 			item1.mask = TVIF_TEXT | TVIF_PARAM | TVS_HASLINES | TVS_LINESATROOT | TVS_SHOWSELALWAYS;
-			item1.cchTextMax = 2;
-			item1.pszText = (LPTSTR)sp.resLinks[index].c_str();
+			item1.cchTextMax = MAX_PATH;
+			item1.pszText = (LPTSTR)iter->first.c_str();
+			item1.lParam = (LPARAM)_wcsdup(iter->second.c_str());
 
 			TV_INSERTSTRUCT insert1;
 			insert1.hParent = Selected;

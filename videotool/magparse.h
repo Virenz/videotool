@@ -1,16 +1,15 @@
-#pragma once
-
+#ifndef MAG_PARSE_H_
+#define MAG_PARSE_H_
 #include "httptool.h"
 #include <regex>
 #include <string>
-#include <queue>
-#include <vector>
+#include <map>
 
 typedef struct tagVideoInfo
 {
 	int							totalNum;				//集数
 	std::wstring				name;					//片名
-	std::vector<std::wstring>	resLinks;				//资源名称
+	std::map<std::wstring, std::wstring>	resLinks;				//资源名称
 }VideoInfo;
 
 class MagParse
@@ -27,7 +26,7 @@ public:
 	BOOL UrlDecode(const char* szSrc, char* pBuf, int cbBufLen);
 	void StringToWstring(std::wstring& szDst, std::string& str);
 
-	std::vector<VideoInfo>& getMags();
+	std::vector<VideoInfo> getMags();
 
 private:
 	std::vector<VideoInfo> mags;
@@ -36,3 +35,5 @@ private:
 		"https://v.qq.com/x/search/?q=%s"
 	};
 };
+
+#endif  // MAG_PARSE_H_

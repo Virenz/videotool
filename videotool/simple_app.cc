@@ -13,6 +13,7 @@
 #include "include/views/cef_window.h"
 #include "include/wrapper/cef_helpers.h"
 
+#include "resource.h"
 
 namespace {
 
@@ -79,7 +80,6 @@ CefRefPtr<SimpleHandler> SimpleApp::GetCefClient()
 void SimpleApp::PlayByCef(CefString url)
 {
 	CefBrowser* pBrowser = m_pCefClient->GetBrowser();
-
 	CefRefPtr<CefFrame> pMainFram = pBrowser->GetMainFrame();
 	if (pMainFram)
 	{
