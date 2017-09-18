@@ -145,7 +145,7 @@ std::vector<VideoInfo> MagParse::GetVideoInfos(char * search_name)
 				vdinfo.name = strname;
 
 				// 正则表达获取该视频链接
-				const std::wregex pattern(L"href=\"(((http|ftp|https)://)(([a-zA-Z0-9\._-]+\.[a-zA-Z]{2,6})|([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}))(:[0-9]{1,4})*(/[a-zA-Z0-9\&%_\./-~-]*)?)([^\.]*)video:poster_([^\.]*|[^\u4e00-\u9fa5]*)(num|play)\"([^0-9\u4e00-\u9fa5]*)>([0-9\u4e00-\u9fa5]{1,})<");
+				const std::wregex pattern(L"href=\"(((http|ftp|https)://)(([a-zA-Z0-9\._-]+\.[a-zA-Z]{2,6})|([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}))(:[0-9]{1,4})*(/[a-zA-Z0-9\&%_\./-~-]*)?)([^\.]*)video:poster_(num|play)([^\.]*|[^\u4e00-\u9fa5]*)>([0-9\u4e00-\u9fa5]{1,})<");
 				std::wsmatch result;
 
 				for (std::wsregex_iterator it(strreslink.begin(), strreslink.end(), pattern), end;     //end是尾后迭代器，regex_iterator是regex_iterator的string类型的版本
