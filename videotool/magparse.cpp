@@ -40,6 +40,22 @@ std::wstring MagParse::GetHtmlPage(char* url, int url_id)
 	return magunicodeHtml;
 }
 
+std::wstring MagParse::GetHtmlPage(const char * url)
+{
+	std::wstring magunicodeHtml;
+
+	HttpTool* httpTool = new HttpTool();
+
+	bool isGet = httpTool->httpGet(url);
+	if (!isGet)
+		return magunicodeHtml;
+
+	StringToWstring(magunicodeHtml, std::string(httpTool->getReponseHTML()));
+	delete httpTool;
+
+	return magunicodeHtml;
+}
+
 //获取视频信息
 std::vector<VideoInfo> MagParse::GetVideoInfos(char * search_name)
 {
@@ -114,6 +130,72 @@ std::vector<VideoInfo> MagParse::GetVideoInfos(char * search_name)
 	//	return mags;
 	//}
 
+	//-----------------------使用优酷视频进行搜索-----------------------------------
+	html = GetHtmlPage(search_name, 2);
+
+	while ((nPos = html.find(L"s_detail", n)) != -1)
+	{
+		isSearch = TRUE;
+		// 为后面数据find进行位移
+		n = nPos + 1;
+
+		VideoInfo vdinfo;
+
+		// 获取关键字搜索结果的内容块
+		int nEndPos = html.find(L"s_detail", n);
+		std::wstring strcontenthtml = html.substr(n, nEndPos - n);
+
+		// 获取视频名称
+		int nStartPos = strcontenthtml.find(L"_log_title", 0);
+		nStartPos = nStartPos + 12;
+		nEndPos = strcontenthtml.find(L"\'", nStartPos);
+		std::wstring strname = strcontenthtml.substr(nStartPos, nEndPos - nStartPos);
+		vdinfo.name = strname;
+
+		// 获取视频链接源码块
+		nStartPos = strcontenthtml.find(L"s_items", 0);
+		if (nStartPos < 0)	// 获取电影
+		{
+			nStartPos = strcontenthtml.find(L"href=\"http", 0);
+			nStartPos = nStartPos + 6;
+			nEndPos = strcontenthtml.find(L"\"", nStartPos);
+			std::wstring strreslink = strcontenthtml.substr(nStartPos, nEndPos - nStartPos);
+			vdinfo.resLinks.insert(std::pair<std::wstring, std::wstring>(strname, strreslink));
+		}
+		else //获取电视剧
+		{
+			int is_all = strcontenthtml.find(L"s_items all", nStartPos);
+			if (is_all != -1)
+			{
+				nStartPos = is_all;
+			}
+			nEndPos = strcontenthtml.find(L"</div>", nStartPos);
+			std::wstring contentHtml = strcontenthtml.substr(nStartPos + 1, nEndPos - nStartPos);
+
+			// 正则表达获取该视频链接
+			const std::wregex pattern(L"href=\"(((http|ftp|https)://)(([a-zA-Z0-9\._-]+\.[a-zA-Z]{2,6})|([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}))(:[0-9]{1,4})*(/[a-zA-Z0-9\&%_\./-~-]*)?)[^\.]*>([0-9]{1,})<");
+			std::wsmatch result;
+
+			for (std::wsregex_iterator it(contentHtml.begin(), contentHtml.end(), pattern), end;     //end是尾后迭代器，regex_iterator是regex_iterator的string类型的版本
+				it != end;
+				++it)
+			{
+				vdinfo.resLinks.insert(std::pair<std::wstring, std::wstring>((*it)[(*it).size() - 1].str(), (*it)[1].str()));
+			}
+		}
+
+		// 获取视频集数
+		vdinfo.totalNum = vdinfo.resLinks.size();
+		if (vdinfo.totalNum != 0)
+		{
+			mags.push_back(vdinfo);
+		}
+	}
+	// 清理使用变量
+	html.clear();
+	nPos = 0;
+	n = 0;
+
 	// -----------------------使用腾讯视频进行搜索-----------------------------------
 	html = GetHtmlPage(search_name, 1);
 
@@ -129,21 +211,48 @@ std::vector<VideoInfo> MagParse::GetVideoInfos(char * search_name)
 		int nEndPos = html.find(L"tip_download", nPos);
 		std::wstring strreslink = html.substr(n, nEndPos - n);
 
-		// 如果含有未展开的标签，需要单独进行
-		if(strreslink.find(L"video:poster_num_unfold") != -1)
+		// 获取视频名称
+		int nStartPos = strreslink.find(L"title: \'", 0);
+		if (nStartPos != -1)
 		{
-		}
-		else
-		{
-			// 获取视频名称
-			int nStartPos = strreslink.find(L"title: \'", 0);
-			if (nStartPos != -1)
-			{
-				nStartPos = nStartPos + 8; // 8(title: ')
-				nEndPos = strreslink.find(L"\'", nStartPos);
-				std::wstring strname = strreslink.substr(nStartPos, nEndPos - nStartPos);
-				vdinfo.name = strname;
+			nStartPos = nStartPos + 8; // 8(title: ')
+			nEndPos = strreslink.find(L"\'", nStartPos);
+			std::wstring strname = strreslink.substr(nStartPos, nEndPos - nStartPos);
+			vdinfo.name = strname;
 
+			// 如果视频信息含有未展开的标签，需要单独进行
+			if (strreslink.find(L"video:poster_num_unfold") != -1)
+			{
+				nStartPos = html.rfind(L"result_title", nPos);
+				if (nStartPos != -1)
+				{
+					nStartPos = nStartPos + 23;
+					nEndPos = html.find(L"\"", nStartPos);
+					std::wstring strurl = html.substr(nStartPos, nEndPos - nStartPos);
+					std::string url;
+					WstringToString(url, strurl);
+					std::wstring childhtml = GetHtmlPage(url.c_str());
+
+					// 正则表达获取该视频链接
+					const std::wregex pattern(L"href=\"(((http|ftp|https)://)(([a-zA-Z0-9\._-]+\.[a-zA-Z]{2,6})|([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}))(:[0-9]{1,4})*(/[a-zA-Z0-9\&%_\./-~-]*)?)([^\.]*)episodeNumber\">([0-9]{1,})<");
+					std::wsmatch result;
+
+					for (std::wsregex_iterator it(childhtml.begin(), childhtml.end(), pattern), end;     //end是尾后迭代器，regex_iterator是regex_iterator的string类型的版本
+						it != end;
+						++it)
+					{
+						vdinfo.resLinks.insert(std::pair<std::wstring, std::wstring>((*it)[(*it).size() - 1].str(), (*it)[1].str()));
+						//insert(std::pair<std::string, std::string>(key,value));
+					}
+
+					// 获取视频集数
+					vdinfo.totalNum = vdinfo.resLinks.size();
+
+					mags.push_back(vdinfo);
+				}
+			}
+			else
+			{
 				// 正则表达获取该视频链接
 				const std::wregex pattern(L"href=\"(((http|ftp|https)://)(([a-zA-Z0-9\._-]+\.[a-zA-Z]{2,6})|([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}))(:[0-9]{1,4})*(/[a-zA-Z0-9\&%_\./-~-]*)?)([^\.]*)video:poster_(num|play)([^\.]*|[^\u4e00-\u9fa5]*)>([0-9\u4e00-\u9fa5]{1,})<");
 				std::wsmatch result;
@@ -158,11 +267,12 @@ std::vector<VideoInfo> MagParse::GetVideoInfos(char * search_name)
 
 				// 获取视频集数
 				vdinfo.totalNum = vdinfo.resLinks.size();
-
-				mags.push_back(vdinfo);
+				if (vdinfo.totalNum != 0)
+				{
+					mags.push_back(vdinfo);
+				}
 			}
 		}
-		
 	}
 	// 清理使用变量
 	html.clear();
@@ -347,4 +457,15 @@ void MagParse::StringToWstring(std::wstring& szDst, std::string& str)
 	MultiByteToWideChar(CP_UTF8, 0, (LPCSTR)temp.c_str(), -1, (LPWSTR)wszUtf8, len);
 	szDst = wszUtf8;
 	delete[] wszUtf8;
+}
+
+void MagParse::WstringToString(std::string& szDst, std::wstring& wchar)
+{
+	std::wstring  wText = wchar;
+	DWORD dwNum = WideCharToMultiByte(CP_OEMCP, NULL, wText.c_str(), -1, NULL, 0, NULL, FALSE);// WideCharToMultiByte的运用
+	char *psText;  // psText为char*的临时数组，作为赋值给std::string的中间变量
+	psText = new char[dwNum];
+	WideCharToMultiByte(CP_OEMCP, NULL, wText.c_str(), -1, psText, dwNum, NULL, FALSE);// WideCharToMultiByte的再次运用
+	szDst = psText;// std::string赋值
+	delete[]psText;// psText的清除
 }

@@ -14,18 +14,16 @@
 #pragma comment(lib, "libcef.lib")
 #pragma comment(lib, "libcef_dll_wrapper.lib")
 
-
 INT_PTR CALLBACK DlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 void InitComBox(HWND hDlg);
 void performActions(HWND hwnd);
 int InitTreeControl(HWND hwnd, MagParse *uidatas);
+void ClearTreeControl(HWND hwnd);
 
 CefRefPtr<SimpleApp>	app;
 BOOL					m_bCEFInitialized;
 std::multimap<std::string, std::string> jiexiurls;
-WCHAR					test[50] = L"testllllllllllllllll";
-
-
+std::vector<void*>						lparams;
 // When generating projects with CMake the CEF_USE_SANDBOX value will be defined
 // automatically if using the required compiler version. Pass -DUSE_SANDBOX=OFF
 // to the CMake command-line to disable use of the sandbox.
@@ -143,6 +141,7 @@ INT_PTR CALLBACK DlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 	}
 	case WM_CLOSE:
 	{
+		ClearTreeControl(hDlg);
 		if (app != NULL)
 		{
 			if (app.get()->GetCefClient() != NULL)
@@ -159,7 +158,7 @@ INT_PTR CALLBACK DlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 			CefShutdown();
 		}
 		PostQuitMessage(0);//退出
-		EndDialog(hDlg, IDCANCEL);
+		//EndDialog(hDlg, IDCANCEL);
 	}
 	case WM_COMMAND:
 	{
@@ -187,8 +186,7 @@ INT_PTR CALLBACK DlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 			case IDC_START_SEARCH:
 			{
 				// 清理视频信息数据
-				HWND m_tree = GetDlgItem(hDlg, IDC_VIDEOINFOS);
-				TreeView_DeleteAllItems(m_tree);
+				ClearTreeControl(hDlg);
 
 				std::thread action(performActions, hDlg);
 				action.detach();
@@ -226,7 +224,6 @@ INT_PTR CALLBACK DlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 			{
 				TCHAR* url = (TCHAR*)(ti.lParam);
 				SetDlgItemText(hDlg, IDC_URL, url);
-				delete url;
 			}
 		}
 	}
@@ -298,6 +295,8 @@ int InitTreeControl(HWND hdlg, MagParse *uidatas)
 			item1.pszText = (LPTSTR)iter->first.c_str();
 			item1.lParam = (LPARAM)_wcsdup(iter->second.c_str());
 
+			lparams.push_back((void*)item1.lParam);
+
 			TV_INSERTSTRUCT insert1;
 			insert1.hParent = Selected;
 			insert1.hInsertAfter = TVI_LAST;
@@ -308,4 +307,21 @@ int InitTreeControl(HWND hdlg, MagParse *uidatas)
 	}
 
 	return 0;
+}
+
+void ClearTreeControl(HWND hwnd)
+{
+	HWND m_tree = GetDlgItem(hwnd, IDC_VIDEOINFOS);
+	
+	std::vector<void*>::iterator iter = lparams.begin();
+	while (iter != lparams.end()) //#1
+	{
+		//注意要先释放内存，在删除vector元素，顺序不能颠倒。
+		//释放内存
+		free(*iter);
+		*iter = NULL;
+		iter++; //#1
+	}
+	lparams.clear();
+	TreeView_DeleteAllItems(m_tree);
 }
