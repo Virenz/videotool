@@ -1,4 +1,5 @@
-#pragma once
+#ifndef __HTTP_TOOL_H__
+#define __HTTP_TOOL_H__
 
 #include "curl/curl.h"
 #pragma comment(lib, "libcurl.lib") 
@@ -22,3 +23,4 @@ public:
 private:
 	_MEMORYSTRUNCT chunk;
 };
+#endif  // __HTTP_TOOL_H__

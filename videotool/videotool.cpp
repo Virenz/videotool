@@ -1,8 +1,8 @@
-#pragma once
 #include <windows.h>
 #include <tchar.h>
 #include <thread>
 #include <commctrl.h>
+#include <gdiplus.h>
 #include "resource.h"
 
 #include "include/cef_sandbox_win.h"
@@ -13,17 +13,20 @@
 
 #pragma comment(lib, "libcef.lib")
 #pragma comment(lib, "libcef_dll_wrapper.lib")
-
+#pragma comment( lib, "gdiplus.lib") 
 INT_PTR CALLBACK DlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 void InitComBox(HWND hDlg);
 void performActions(HWND hwnd);
 int InitTreeControl(HWND hwnd, MagParse *uidatas);
 void ClearTreeControl(HWND hwnd);
 
+ULONG_PTR m_gdiplusToken;
+HBITMAP s_hBitmap = NULL;
 CefRefPtr<SimpleApp>	app;
 BOOL					m_bCEFInitialized;
-std::multimap<std::string, std::string> jiexiurls;
-std::vector<void*>						lparams;
+std::multimap<std::string, std::string> jiexiurls;	// ¼ÇÂ¼½Ó¿Ú
+std::vector<void*>						lparams;	// ¼ÇÂ¼treeview.lparamÁÙÊ±ÉêÇë¿Õ¼äµÄÖ¸Õë£¬±ãÓÚ½øĞĞÊÍ·Å
+
 // When generating projects with CMake the CEF_USE_SANDBOX value will be defined
 // automatically if using the required compiler version. Pass -DUSE_SANDBOX=OFF
 // to the CMake command-line to disable use of the sandbox.
@@ -42,6 +45,10 @@ int WINAPI WinMain(HINSTANCE hInstance,
 	HINSTANCE hPrevInstance,
 	LPSTR lpCmdLine,
 	int nCmdShow) {
+
+	// Init GDI+    
+	Gdiplus::GdiplusStartupInput gdiplusStartupInput;
+	Gdiplus::GdiplusStartup(&m_gdiplusToken, &gdiplusStartupInput, NULL);
 
 	UNREFERENCED_PARAMETER(hPrevInstance);
 	UNREFERENCED_PARAMETER(lpCmdLine);
@@ -106,7 +113,7 @@ int WINAPI WinMain(HINSTANCE hInstance,
 	
 	// Initialize CEF.
 	m_bCEFInitialized = CefInitialize(main_args, settings, app.get(), sandbox_info);
-	
+
 	MSG msg;
 	while (GetMessage(&msg, NULL, 0, 0))
 	{
@@ -115,17 +122,15 @@ int WINAPI WinMain(HINSTANCE hInstance,
 			//Edit_SetSel(GetDlgItem(hdlg, IDC_URL), 0, -1);
 			SendMessage(GetDlgItem(hdlg, IDC_URL), EM_SETSEL, 0, -1);
 		}
-		if (!IsDialogMessage(hdlg, &msg))
-		{
-			TranslateMessage(&msg);
-			DispatchMessage(&msg);
-		}
+		TranslateMessage(&msg);
+		DispatchMessage(&msg);
 		if (m_bCEFInitialized)
 		{
 			CefDoMessageLoopWork();
 		}
 	}
-
+	// delete GDI
+	Gdiplus::GdiplusShutdown(m_gdiplusToken);
 	return 0;
 }
 
@@ -157,7 +162,7 @@ INT_PTR CALLBACK DlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 			app = NULL;
 			CefShutdown();
 		}
-		PostQuitMessage(0);//é€€å‡º
+		PostQuitMessage(0);//ÍË³ö
 		//EndDialog(hDlg, IDCANCEL);
 	}
 	case WM_COMMAND:
@@ -166,26 +171,26 @@ INT_PTR CALLBACK DlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 		{
 			case IDOK:
 			{
-				// è·å–è§£æå€Ÿå£
+				// »ñÈ¡½âÎö½è¿Ú
 				HWND combox = GetDlgItem(hDlg, IDC_INTERFACE);
 				CHAR szBuff[200];
 				ZeroMemory(szBuff, sizeof(szBuff));
 				SendMessageA(combox, CB_GETLBTEXT, SendMessage(combox, CB_GETCURSEL, 0, 0), (LPARAM)szBuff);
 				std::string jiexiurl = jiexiurls.find(szBuff)->second;
 
-				// è·å–éœ€è¦æ’­æ”¾è§†é¢‘çš„url
+				// »ñÈ¡ĞèÒª²¥·ÅÊÓÆµµÄurl
 				ZeroMemory(szBuff, sizeof(szBuff));
 				GetDlgItemTextA(hDlg, IDC_URL, szBuff, 200);
 				std::string url;
 				url.append(jiexiurl + szBuff);
 				
-				//å¯åŠ¨æ’­æ”¾è¯¥è§†é¢‘
+				//Æô¶¯²¥·Å¸ÃÊÓÆµ
 				app.get()->PlayByCef(url);
 				break;
 			}
 			case IDC_START_SEARCH:
 			{
-				// æ¸…ç†è§†é¢‘ä¿¡æ¯æ•°æ®
+				// ÇåÀíÊÓÆµĞÅÏ¢Êı¾İ
 				ClearTreeControl(hDlg);
 
 				std::thread action(performActions, hDlg);
@@ -227,6 +232,40 @@ INT_PTR CALLBACK DlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 			}
 		}
 	}
+	case WM_PAINT:
+	{
+		HWND videoimg = GetDlgItem(hDlg, IDC_VIDEOIMG);
+		HDC hdc = GetDC(videoimg);//BeginPaint(hDlg, &ps);
+		// TODO:  ÔÚ´ËÌí¼ÓÈÎÒâ»æÍ¼´úÂë...  
+		//¼ÓÔØÍ¼Ïñ  
+		Gdiplus::Image image(L"260.jpg");// https://puui.qpic.cn/vcover_vt_pic/0/m8i6uooilmandtf1502788298/260
+
+		if (image.GetLastStatus() != Gdiplus::Status::Ok) {
+			MessageBox(hDlg, L"¼ÓÔØÍ¼Æ¬Ê§°Ü!", L"ÌáÊ¾", MB_OK);
+			return -1;
+		}
+	
+		
+		RECT videoimgrect;		
+		GetClientRect(videoimg, &videoimgrect);
+		//ShowWindow(videoimg, SW_HIDE);
+
+		//È¡µÃ¿í¶ÈºÍ¸ß¶È  
+		Gdiplus::Image* pThumbnail = image.GetThumbnailImage(
+			videoimgrect.right - videoimgrect.left,
+			videoimgrect.bottom - videoimgrect.top, 
+			NULL, 
+			NULL);
+		
+		//»æÍ¼  
+		Gdiplus::Graphics graphics(hdc);
+		graphics.DrawImage(&image, videoimgrect.left, videoimgrect.top, pThumbnail->GetWidth(), pThumbnail->GetHeight());
+
+		delete pThumbnail;
+		graphics.ReleaseHDC(hdc);
+		//EndPaint(hDlg, &ps);
+		break;
+	}
 	default:
 		break;
 	}
@@ -235,7 +274,7 @@ INT_PTR CALLBACK DlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 
 void performActions(HWND hwnd)
 {
-	// å”¤é†’æ‰§è¡Œ æŒ‰é’®
+	// »½ĞÑÖ´ĞĞ °´Å¥
 	EnableWindow(GetDlgItem(hwnd, IDC_START_SEARCH), false);
 
 	char search_str[MAX_PATH];
@@ -246,13 +285,13 @@ void performActions(HWND hwnd)
 	InitTreeControl(hwnd, magParse);
 	delete magParse;
 
-	// å”¤é†’æ‰§è¡Œ æŒ‰é’®
+	// »½ĞÑÖ´ĞĞ °´Å¥
 	EnableWindow(GetDlgItem(hwnd, IDC_START_SEARCH), true);
 }
 
 void InitComBox(HWND hDlg)
 {
-	// æ¸…ç©ºjiexiurlsæ•°æ®
+	// Çå¿ÕjiexiurlsÊı¾İ
 	jiexiurls.clear();
 
 	HWND combox = GetDlgItem(hDlg, IDC_INTERFACE);
@@ -286,7 +325,7 @@ int InitTreeControl(HWND hdlg, MagParse *uidatas)
 
 		HWND m_tree = GetDlgItem(hdlg, IDC_VIDEOINFOS);
 		HTREEITEM Selected = TreeView_InsertItem(m_tree, &insert);
-		//for (int index = 0; index < sp.totalNum; index++) //éå†jsonæˆå‘˜
+		//for (int index = 0; index < sp.totalNum; index++) //±éÀújson³ÉÔ±
 		for(std::multimap<std::wstring, std::wstring>::iterator iter = sp.resLinks.begin(); iter != sp.resLinks.end(); ++iter)
 		{
 			TV_ITEM item1;
@@ -316,8 +355,8 @@ void ClearTreeControl(HWND hwnd)
 	std::vector<void*>::iterator iter = lparams.begin();
 	while (iter != lparams.end()) //#1
 	{
-		//æ³¨æ„è¦å…ˆé‡Šæ”¾å†…å­˜ï¼Œåœ¨åˆ é™¤vectorå…ƒç´ ï¼Œé¡ºåºä¸èƒ½é¢ å€’ã€‚
-		//é‡Šæ”¾å†…å­˜
+		//×¢ÒâÒªÏÈÊÍ·ÅÄÚ´æ£¬ÔÚÉ¾³ıvectorÔªËØ£¬Ë³Ğò²»ÄÜµßµ¹¡£
+		//ÊÍ·ÅÄÚ´æ
 		free(*iter);
 		*iter = NULL;
 		iter++; //#1

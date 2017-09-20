@@ -1,4 +1,4 @@
-#include "httptool.h"
+ï»¿#include "httptool.h"
 
 HttpTool::HttpTool()
 {
@@ -52,11 +52,11 @@ bool HttpTool::httpGet(const char * sourses)
 		/* what URL that receives this GET */
 		curl_easy_setopt(curl, CURLOPT_URL, sourses);
 
-		//Í¨¹ıwrite_data·½·¨½«ÁªÍø·µ»ØÊı¾İĞ´Èëµ½dataÖĞ
+		// use write_data get httpget data
 		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteData);
 		curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&chunk);
 
-		// ÉèÖÃssl
+		// set ssl
 		curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
 		curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
 
@@ -105,17 +105,17 @@ bool HttpTool::httpPost(const char * url, const char * strpost)
 		curl_easy_setopt(curl, CURLOPT_POST, 1);
 		curl_easy_setopt(curl, CURLOPT_POSTFIELDS, strpost);
 
-		//Í¨¹ıwrite_data·½·¨½«ÁªÍø·µ»ØÊı¾İĞ´Èëµ½dataÖĞ
+		//Use write_data post httppost data
 		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteData);
 		curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&chunk);
 
-		// ÉèÖÃssl
+		// set ssl
 		curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
 		curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
 
 		/**
-		* µ±¶à¸öÏß³Ì¶¼Ê¹ÓÃ³¬Ê±´¦ÀíµÄÊ±ºò£¬Í¬Ê±Ö÷Ïß³ÌÖĞÓĞsleep»òÊÇwaitµÈ²Ù×÷¡£
-		* Èç¹û²»ÉèÖÃÕâ¸öÑ¡Ïî£¬libcurl½«»á·¢ĞÅºÅ´ò¶ÏÕâ¸öwait´Ó¶øµ¼ÖÂ³ÌĞòÍË³ö¡£
+		* å½“å¤šä¸ªçº¿ç¨‹éƒ½ä½¿ç”¨è¶…æ—¶å¤„ç†çš„æ—¶å€™ï¼ŒåŒæ—¶ä¸»çº¿ç¨‹ä¸­æœ‰sleepæˆ–æ˜¯waitç­‰æ“ä½œã€‚
+		* å¦‚æœä¸è®¾ç½®è¿™ä¸ªé€‰é¡¹ï¼Œlibcurlå°†ä¼šå‘ä¿¡å·æ‰“æ–­è¿™ä¸ªwaitä»è€Œå¯¼è‡´ç¨‹åºé€€å‡ºã€‚
 		*/
 		curl_easy_setopt(curl, CURLOPT_NOSIGNAL, 1);
 		curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT, 3);

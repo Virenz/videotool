@@ -1,5 +1,5 @@
-#ifndef MAG_PARSE_H_
-#define MAG_PARSE_H_
+#ifndef __MAG_PARSE_H__
+#define __MAG_PARSE_H__
 #include "httptool.h"
 #include <regex>
 #include <string>
