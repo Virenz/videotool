@@ -133,7 +133,7 @@ std::vector<VideoInfo> MagParse::GetVideoInfos(char * search_name)
 	//-----------------------使用优酷视频进行搜索-----------------------------------
 	html = GetHtmlPage(search_name, 2);
 
-	while ((nPos = html.find(L"s_detail", n)) != -1)
+	while ((nPos = html.find(L"\"s_dir\"", n)) != -1)
 	{
 		isSearch = TRUE;
 		// 为后面数据find进行位移
@@ -142,7 +142,7 @@ std::vector<VideoInfo> MagParse::GetVideoInfos(char * search_name)
 		VideoInfo vdinfo;
 
 		// 获取关键字搜索结果的内容块
-		int nEndPos = html.find(L"s_detail", n);
+		int nEndPos = html.find(L"\"s_dir\"", n);
 		std::wstring strcontenthtml = html.substr(n, nEndPos - n);
 
 		// 获取视频名称
@@ -151,6 +151,15 @@ std::vector<VideoInfo> MagParse::GetVideoInfos(char * search_name)
 		nEndPos = strcontenthtml.find(L"\'", nStartPos);
 		std::wstring strname = strcontenthtml.substr(nStartPos, nEndPos - nStartPos);
 		vdinfo.name = strname;
+
+		// 获取图片
+		nStartPos = strcontenthtml.find(L"s_target", 0);
+		nStartPos = nStartPos + 20;
+		nEndPos = strcontenthtml.find(L"\"", nStartPos);
+		std::wstring strimgw = strcontenthtml.substr(nStartPos, nEndPos - nStartPos);
+		std::string strimg;
+		WstringToString(strimg, strimgw);
+		vdinfo.img = strimg;
 
 		// 获取视频链接源码块
 		nStartPos = strcontenthtml.find(L"s_items", 0);
@@ -207,12 +216,23 @@ std::vector<VideoInfo> MagParse::GetVideoInfos(char * search_name)
 
 		VideoInfo vdinfo;
 
+		// 获取图片
+		int nEndPos = html.rfind(L"r-imgerr", nPos);
+		nEndPos = nEndPos - 3;
+		int nStartPos = html.rfind(L"src", nEndPos);
+		nStartPos = nStartPos + 5;
+		
+		std::wstring strimgw = html.substr(nStartPos, nEndPos - nStartPos).insert(0, L"https:");
+		std::string strimg;
+		WstringToString(strimg, strimgw);
+		vdinfo.img = strimg;
+
 		// 获取关键字搜索结果的内容块
-		int nEndPos = html.find(L"tip_download", nPos);
+		nEndPos = html.find(L"tip_download", nPos);
 		std::wstring strreslink = html.substr(n, nEndPos - n);
 
 		// 获取视频名称
-		int nStartPos = strreslink.find(L"title: \'", 0);
+		nStartPos = strreslink.find(L"title: \'", 0);
 		if (nStartPos != -1)
 		{
 			nStartPos = nStartPos + 8; // 8(title: ')

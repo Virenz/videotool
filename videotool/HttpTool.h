@@ -18,6 +18,7 @@ public:
 	bool httpGet(const char* sourses);
 	bool httpPost(const char* url, const char* strpost);
 	char* getReponseHTML();
+	int getReponseHTMLSize();
 	void cleanChunk();
 
 private:

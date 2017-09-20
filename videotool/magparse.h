@@ -15,6 +15,7 @@ struct CmpByKeyLength {
 typedef struct tagVideoInfo
 {
 	int							totalNum;				//集数
+	std::string					img;					//图片
 	std::wstring				name;					//片名
 	std::map<std::wstring, std::wstring, CmpByKeyLength>	resLinks;				//资源名称
 }VideoInfo;

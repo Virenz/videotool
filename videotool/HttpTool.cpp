@@ -152,6 +152,11 @@ char* HttpTool::getReponseHTML()
 	return this->chunk.memory;
 }
 
+int HttpTool::getReponseHTMLSize()
+{
+	return this->chunk.size;
+}
+
 void HttpTool::cleanChunk()
 {
 	free(chunk.memory);

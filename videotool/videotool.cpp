@@ -14,11 +14,13 @@
 #pragma comment(lib, "libcef.lib")
 #pragma comment(lib, "libcef_dll_wrapper.lib")
 #pragma comment( lib, "gdiplus.lib") 
+
 INT_PTR CALLBACK DlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 void InitComBox(HWND hDlg);
 void performActions(HWND hwnd);
 int InitTreeControl(HWND hwnd, MagParse *uidatas);
 void ClearTreeControl(HWND hwnd);
+BOOL VideoLoadImage(HWND hDlg, const char* pszFileName);
 
 ULONG_PTR m_gdiplusToken;
 HBITMAP s_hBitmap = NULL;
@@ -142,6 +144,7 @@ INT_PTR CALLBACK DlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 	{
 		//SendMessage(hDlg, WM_SETICON, ICON_SMALL, (LPARAM)LoadIcon(hgInst, MAKEINTRESOURCE(IDI_ICON1)));
 		InitComBox(hDlg);
+
 		break;
 	}
 	case WM_CLOSE:
@@ -203,6 +206,7 @@ INT_PTR CALLBACK DlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 	}
 	case WM_NOTIFY: {
 		LPNMHDR lpnmh = (LPNMHDR)lParam;
+
 		if (NM_DBLCLK == lpnmh->code)
 		{
 			DWORD dwPos = GetMessagePos();
@@ -216,7 +220,7 @@ INT_PTR CALLBACK DlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 			HTREEITEM hItem = TreeView_HitTest(lpnmh->hwndFrom, &ht);
 			TreeView_SelectItem(lpnmh->hwndFrom, hItem);
 			TVITEM ti = { 0 };
-			ti.mask = TVIF_TEXT | TVIF_PARAM | TVS_HASLINES | TVS_LINESATROOT | TVS_SHOWSELALWAYS;;
+			ti.mask = TVIF_TEXT | TVIF_PARAM | TVS_HASLINES | TVS_LINESATROOT | TVS_SHOWSELALWAYS;
 			TCHAR buf[MAX_PATH] = { 0 };
 			int index = 0;
 			ti.cchTextMax = MAX_PATH;
@@ -225,46 +229,18 @@ INT_PTR CALLBACK DlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 		
 			TreeView_GetItem(lpnmh->hwndFrom, &ti);
 
-			if (!TreeView_GetChild(lpnmh->hwndFrom, hItem)&&ti.lParam > 0)
+			if (!TreeView_GetChild(lpnmh->hwndFrom, hItem))
 			{
-				TCHAR* url = (TCHAR*)(ti.lParam);
-				SetDlgItemText(hDlg, IDC_URL, url);
+				SetDlgItemText(hDlg, IDC_URL, (TCHAR*)(ti.lParam));
+			}
+			else if(ti.state != 98)
+			{
+				int erro = VideoLoadImage(hDlg, (char*)(ti.lParam));
+			}
+			else
+			{
 			}
 		}
-	}
-	case WM_PAINT:
-	{
-		HWND videoimg = GetDlgItem(hDlg, IDC_VIDEOIMG);
-		HDC hdc = GetDC(videoimg);//BeginPaint(hDlg, &ps);
-		// TODO:  在此添加任意绘图代码...  
-		//加载图像  
-		Gdiplus::Image image(L"260.jpg");// https://puui.qpic.cn/vcover_vt_pic/0/m8i6uooilmandtf1502788298/260
-
-		if (image.GetLastStatus() != Gdiplus::Status::Ok) {
-			MessageBox(hDlg, L"加载图片失败!", L"提示", MB_OK);
-			return -1;
-		}
-	
-		
-		RECT videoimgrect;		
-		GetClientRect(videoimg, &videoimgrect);
-		//ShowWindow(videoimg, SW_HIDE);
-
-		//取得宽度和高度  
-		Gdiplus::Image* pThumbnail = image.GetThumbnailImage(
-			videoimgrect.right - videoimgrect.left,
-			videoimgrect.bottom - videoimgrect.top, 
-			NULL, 
-			NULL);
-		
-		//绘图  
-		Gdiplus::Graphics graphics(hdc);
-		graphics.DrawImage(&image, videoimgrect.left, videoimgrect.top, pThumbnail->GetWidth(), pThumbnail->GetHeight());
-
-		delete pThumbnail;
-		graphics.ReleaseHDC(hdc);
-		//EndPaint(hDlg, &ps);
-		break;
 	}
 	default:
 		break;
@@ -314,9 +290,12 @@ int InitTreeControl(HWND hdlg, MagParse *uidatas)
 	for (auto sp : infos)
 	{
 		TV_ITEM item;
-		item.mask = TVIF_TEXT;
-		item.cchTextMax = 10;
+		item.mask = TVIF_TEXT | TVIF_PARAM | TVS_HASLINES | TVS_LINESATROOT | TVS_SHOWSELALWAYS;
+		item.cchTextMax = MAX_PATH;
 		item.pszText = (LPWSTR)sp.name.c_str();
+		item.lParam = (LPARAM)_strdup(sp.img.c_str());
+
+		lparams.push_back((void*)item.lParam);
 
 		TV_INSERTSTRUCT insert;
 		insert.hParent = TVI_ROOT;
@@ -363,4 +342,88 @@ void ClearTreeControl(HWND hwnd)
 	}
 	lparams.clear();
 	TreeView_DeleteAllItems(m_tree);
+}
+
+BOOL VideoLoadImage(HWND hDlg, const char* pszFileName)
+{
+	HttpTool* httpTool = new HttpTool();
+
+	bool isGet = httpTool->httpGet(pszFileName);
+	if (!isGet)
+		return FALSE;
+
+	size_t dwSize;
+	// 根据文件大小分配HGLOBAL内存  
+	dwSize = httpTool->getReponseHTMLSize();
+
+	HGLOBAL hGlobal = GlobalAlloc(GMEM_MOVEABLE | GMEM_NODISCARD, dwSize);
+	if (!hGlobal)
+	{
+		return FALSE;
+	};
+
+	char *pData = reinterpret_cast<char*>(GlobalLock(hGlobal));
+	if (!pData)
+	{
+		GlobalFree(hGlobal);
+		return FALSE;
+	};
+
+	// 将文件内容读到HGLOBAL内存中 
+	int erro = 0;
+	memcpy(pData, httpTool->getReponseHTML(), dwSize);
+	pData[dwSize] = 0;
+	/*erro = strcpy_s(pData, dwSize, httpTool->getReponseHTML());
+	if (erro != 0)
+	{
+		GlobalFree(hGlobal);
+		delete httpTool;
+		return FALSE;
+	}*/
+	
+	GlobalUnlock(hGlobal);
+	
+
+	// 利用hGlobal内存中的数据创建stream  
+	IStream* istream = NULL;
+	if (CreateStreamOnHGlobal(hGlobal, TRUE, &istream) != S_OK)
+	{
+		return FALSE;
+	}
+
+	HWND videoimg = GetDlgItem(hDlg, IDC_VIDEOIMG);
+	HDC hdc = GetDC(videoimg);//BeginPaint(hDlg, &ps);
+
+	//加载图像  
+	Gdiplus::Image* image = Gdiplus::Image::FromStream(istream);// https://puui.qpic.cn/vcover_vt_pic/0/m8i6uooilmandtf1502788298/260
+	if (image->GetLastStatus() != Gdiplus::Ok)
+	{
+		MessageBox(hDlg, L"加载图片失败!", L"提示", MB_OK);
+		return -1;
+	}
+
+	RECT videoimgrect;
+	GetClientRect(videoimg, &videoimgrect);
+	//ShowWindow(videoimg, SW_HIDE);
+
+	//取得宽度和高度  
+	Gdiplus::Image* pThumbnail = image->GetThumbnailImage(
+		videoimgrect.right - videoimgrect.left,
+		videoimgrect.bottom - videoimgrect.top,
+		NULL,
+		NULL);
+
+	//绘图  
+	Gdiplus::Graphics graphics(hdc);
+	graphics.DrawImage(image, videoimgrect.left, videoimgrect.top, pThumbnail->GetWidth(), pThumbnail->GetHeight());
+
+	delete pThumbnail;
+	delete image;
+	istream->Release();
+	delete httpTool;
+	graphics.ReleaseHDC(hdc);
+
+	//EndPaint(hDlg, &ps);
+
+	return TRUE;
 }
