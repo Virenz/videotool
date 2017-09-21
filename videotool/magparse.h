@@ -40,10 +40,11 @@ public:
 
 private:
 	std::vector<VideoInfo> mags;
-	const char *search_url[3] = {
+	const char *search_url[4] = {
 		"http://so.tv.sohu.com/mts?box=1&wd=%s",
 		"https://v.qq.com/x/search/?q=%s",
 		"http://www.soku.com/search_video/q_%s?f=1",
+		"http://so.iqiyi.com/so/q_%s"
 	};
 };
 

@@ -1,4 +1,4 @@
-#include "magparse.h"
+ï»¿#include "magparse.h"
 
 MagParse::MagParse()
 {
@@ -10,7 +10,7 @@ MagParse::~MagParse()
 
 std::vector<VideoInfo> MagParse::getMags()
 {
-	// TODO: ÔÚ´Ë´¦²åÈë return Óï¾ä
+	// TODO: åœ¨æ­¤å¤„æ’å…¥ return è¯­å¥
 	return this->mags;
 }
 
@@ -56,13 +56,13 @@ std::wstring MagParse::GetHtmlPage(const char * url)
 	return magunicodeHtml;
 }
 
-//»ñÈ¡ÊÓÆµĞÅÏ¢
+//è·å–è§†é¢‘ä¿¡æ¯
 std::vector<VideoInfo> MagParse::GetVideoInfos(char * search_name)
 {
 	/*
-	GetHtmlPage ´«ÈëËÑË÷¹Ø¼ü×ÖºÍurl_id(±íÊ¾Ê¹ÓÃµÄÊÓÆµÍøÕ¾½Ó¿Ú)
-	0: ËÑºüÊÓÆµ
-	1: ÌÚÑ¶ÊÓÆµ
+	GetHtmlPage ä¼ å…¥æœç´¢å…³é”®å­—å’Œurl_id(è¡¨ç¤ºä½¿ç”¨çš„è§†é¢‘ç½‘ç«™æ¥å£)
+	0: æœç‹è§†é¢‘
+	1: è…¾è®¯è§†é¢‘
 	*/
 
 	BOOL isSearch = FALSE;
@@ -71,26 +71,26 @@ std::vector<VideoInfo> MagParse::GetVideoInfos(char * search_name)
 	int nPos = 0;
 	int n = 0;
 
-	////-----------------------Ê¹ÓÃËÑºüÊÓÆµ½øĞĞËÑË÷-----------------------------------
+	////-----------------------ä½¿ç”¨æœç‹è§†é¢‘è¿›è¡Œæœç´¢-----------------------------------
 	//html = GetHtmlPage(search_name, 0);
 
 	//while ((nPos = html.find(L"data-title", n)) != -1)
 	//{
 	//	isSearch = TRUE;
-	//	// ÎªºóÃæÊı¾İfind½øĞĞÎ»ÒÆ
+	//	// ä¸ºåé¢æ•°æ®findè¿›è¡Œä½ç§»
 	//	n = nPos + 1;
 
 	//	VideoInfo vdinfo;
 
-	//	// »ñÈ¡ÊÓÆµÃû³Æ
+	//	// è·å–è§†é¢‘åç§°
 	//	int nStartPos = nPos + 12;
 	//	int nEndPos = html.find(L"\"", nStartPos);
 	//	std::wstring strname = html.substr(nStartPos, nEndPos - nStartPos);
 	//	vdinfo.name = strname;
 
-	//	// »ñÈ¡ÊÓÆµÁ´½ÓÔ´Âë¿é
+	//	// è·å–è§†é¢‘é“¾æ¥æºç å—
 	//	nStartPos = html.rfind(L"series cfix", nPos);
-	//	if (nStartPos < 0)	// »ñÈ¡µçÓ°
+	//	if (nStartPos < 0)	// è·å–ç”µå½±
 	//	{
 	//		nStartPos = html.find(L"data-url", nPos);
 	//		nStartPos = nStartPos + 10;
@@ -98,16 +98,16 @@ std::vector<VideoInfo> MagParse::GetVideoInfos(char * search_name)
 	//		std::wstring strreslink = html.substr(nStartPos, nEndPos - nStartPos);
 	//		vdinfo.resLinks.push_back(strreslink.insert(0, L"http:"));
 	//	}
-	//	else //»ñÈ¡µçÊÓ¾ç
+	//	else //è·å–ç”µè§†å‰§
 	//	{
 	//		nEndPos = html.find(L"</div>", nStartPos);
 	//		std::wstring contentHtml = html.substr(nStartPos + 1, nEndPos - nStartPos);
 
-	//		// ÕıÔò±í´ï»ñÈ¡¸ÃÊÓÆµÁ´½Ó
+	//		// æ­£åˆ™è¡¨è¾¾è·å–è¯¥è§†é¢‘é“¾æ¥
 	//		const std::wregex pattern(L"//tv.sohu.com/[0-9]{8}/\\w{10}.shtml");
 	//		std::wsmatch result;
 
-	//		for (std::wsregex_iterator it(contentHtml.begin(), contentHtml.end(), pattern), end;     //endÊÇÎ²ºóµü´úÆ÷£¬regex_iteratorÊÇregex_iteratorµÄstringÀàĞÍµÄ°æ±¾
+	//		for (std::wsregex_iterator it(contentHtml.begin(), contentHtml.end(), pattern), end;     //endæ˜¯å°¾åè¿­ä»£å™¨ï¼Œregex_iteratoræ˜¯regex_iteratorçš„stringç±»å‹çš„ç‰ˆæœ¬
 	//			it != end;
 	//			++it)
 	//		{
@@ -115,12 +115,12 @@ std::vector<VideoInfo> MagParse::GetVideoInfos(char * search_name)
 	//		}
 	//	}
 
-	//	// »ñÈ¡ÊÓÆµ¼¯Êı
+	//	// è·å–è§†é¢‘é›†æ•°
 	//	vdinfo.totalNum = vdinfo.resLinks.size();
 
 	//	mags.push_back(vdinfo);
 	//}
-	//// ÇåÀíÊ¹ÓÃ±äÁ¿
+	//// æ¸…ç†ä½¿ç”¨å˜é‡
 	//html.clear();
 	//nPos = 0;
 	//n = 0;
@@ -130,93 +130,234 @@ std::vector<VideoInfo> MagParse::GetVideoInfos(char * search_name)
 	//	return mags;
 	//}
 
-	//-----------------------Ê¹ÓÃÓÅ¿áÊÓÆµ½øĞĞËÑË÷-----------------------------------
-	html = GetHtmlPage(search_name, 2);
+	////-----------------------ä½¿ç”¨ä¼˜é…·è§†é¢‘è¿›è¡Œæœç´¢-----------------------------------
+	//html = GetHtmlPage(search_name, 2);
 
-	while ((nPos = html.find(L"\"s_dir\"", n)) != -1)
+	//while ((nPos = html.find(L"\"s_dir\"", n)) != -1)
+	//{
+	//	isSearch = TRUE;
+	//	// ä¸ºåé¢æ•°æ®findè¿›è¡Œä½ç§»
+	//	n = nPos + 1;
+
+	//	VideoInfo vdinfo;
+
+	//	// è·å–å…³é”®å­—æœç´¢ç»“æœçš„å†…å®¹å—
+	//	int nEndPos = html.find(L"\"s_dir\"", n);
+	//	std::wstring strcontenthtml = html.substr(n, nEndPos - n);
+
+	//	// è·å–è§†é¢‘åç§°
+	//	int nStartPos = strcontenthtml.find(L"_log_title", 0);
+	//	nStartPos = nStartPos + 12;
+	//	nEndPos = strcontenthtml.find(L"\'", nStartPos);
+	//	std::wstring strname = strcontenthtml.substr(nStartPos, nEndPos - nStartPos);
+	//	vdinfo.name = strname;
+
+	//	// è·å–å›¾ç‰‡
+	//	nStartPos = strcontenthtml.find(L"s_target", 0);
+	//	nStartPos = nStartPos + 20;
+	//	nEndPos = strcontenthtml.find(L"\"", nStartPos);
+	//	std::wstring strimgw = strcontenthtml.substr(nStartPos, nEndPos - nStartPos);
+	//	std::string strimg;
+	//	WstringToString(strimg, strimgw);
+	//	vdinfo.img = strimg;
+
+	//	// è·å–è§†é¢‘é“¾æ¥æºç å—
+	//	nStartPos = strcontenthtml.find(L"s_items", 0);
+	//	if (nStartPos < 0)	// è·å–ç”µå½±
+	//	{
+	//		nStartPos = strcontenthtml.find(L"href=\"http", 0);
+	//		nStartPos = nStartPos + 6;
+	//		nEndPos = strcontenthtml.find(L"\"", nStartPos);
+	//		std::wstring strreslink = strcontenthtml.substr(nStartPos, nEndPos - nStartPos);
+	//		vdinfo.resLinks.insert(std::pair<std::wstring, std::wstring>(strname, strreslink));
+	//	}
+	//	else //è·å–ç”µè§†å‰§
+	//	{
+	//		int is_all = strcontenthtml.find(L"s_items all", nStartPos);
+	//		if (is_all != -1)
+	//		{
+	//			nStartPos = is_all;
+	//		}
+	//		nEndPos = strcontenthtml.find(L"</div>", nStartPos);
+	//		std::wstring contentHtml = strcontenthtml.substr(nStartPos + 1, nEndPos - nStartPos);
+
+	//		// æ­£åˆ™è¡¨è¾¾è·å–è¯¥è§†é¢‘é“¾æ¥
+	//		const std::wregex pattern(L"href=\"(((http|ftp|https)://)(([a-zA-Z0-9\._-]+\.[a-zA-Z]{2,6})|([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}))(:[0-9]{1,4})*(/[a-zA-Z0-9\&%_\./-~-]*)?)[^\.]*>([0-9]{1,})<");
+	//		std::wsmatch result;
+
+	//		for (std::wsregex_iterator it(contentHtml.begin(), contentHtml.end(), pattern), end;     //endæ˜¯å°¾åè¿­ä»£å™¨ï¼Œregex_iteratoræ˜¯regex_iteratorçš„stringç±»å‹çš„ç‰ˆæœ¬
+	//			it != end;
+	//			++it)
+	//		{
+	//			vdinfo.resLinks.insert(std::pair<std::wstring, std::wstring>((*it)[(*it).size() - 1].str(), (*it)[1].str()));
+	//		}
+	//	}
+
+	//	// è·å–è§†é¢‘é›†æ•°
+	//	vdinfo.totalNum = vdinfo.resLinks.size();
+	//	if (vdinfo.totalNum != 0)
+	//	{
+	//		mags.push_back(vdinfo);
+	//	}
+	//}
+	//// æ¸…ç†ä½¿ç”¨å˜é‡
+	//html.clear();
+	//nPos = 0;
+	//n = 0;
+
+	////-----------------------ä½¿ç”¨ä¼˜é…·è§†é¢‘è¿›è¡Œæœç´¢-----------------------------------
+	//html = GetHtmlPage(search_name, 2);
+
+	//while ((nPos = html.find(L"\"s_dir\"", n)) != -1)
+	//{
+	//	isSearch = TRUE;
+	//	// ä¸ºåé¢æ•°æ®findè¿›è¡Œä½ç§»
+	//	n = nPos + 1;
+
+	//	VideoInfo vdinfo;
+
+	//	// è·å–å…³é”®å­—æœç´¢ç»“æœçš„å†…å®¹å—
+	//	int nEndPos = html.find(L"\"s_dir\"", n);
+	//	std::wstring strcontenthtml = html.substr(n, nEndPos - n);
+
+	//	// è·å–è§†é¢‘åç§°
+	//	int nStartPos = strcontenthtml.find(L"_log_title", 0);
+	//	nStartPos = nStartPos + 12;
+	//	nEndPos = strcontenthtml.find(L"\'", nStartPos);
+	//	std::wstring strname = strcontenthtml.substr(nStartPos, nEndPos - nStartPos);
+	//	vdinfo.name = strname;
+
+	//	// è·å–å›¾ç‰‡
+	//	nStartPos = strcontenthtml.find(L"s_target", 0);
+	//	nStartPos = nStartPos + 20;
+	//	nEndPos = strcontenthtml.find(L"\"", nStartPos);
+	//	std::wstring strimgw = strcontenthtml.substr(nStartPos, nEndPos - nStartPos);
+	//	std::string strimg;
+	//	WstringToString(strimg, strimgw);
+	//	vdinfo.img = strimg;
+
+	//	// è·å–è§†é¢‘é“¾æ¥æºç å—
+	//	nStartPos = strcontenthtml.find(L"s_items", 0);
+	//	if (nStartPos < 0)	// è·å–ç”µå½±
+	//	{
+	//		nStartPos = strcontenthtml.find(L"href=\"http", 0);
+	//		nStartPos = nStartPos + 6;
+	//		nEndPos = strcontenthtml.find(L"\"", nStartPos);
+	//		std::wstring strreslink = strcontenthtml.substr(nStartPos, nEndPos - nStartPos);
+	//		vdinfo.resLinks.insert(std::pair<std::wstring, std::wstring>(strname, strreslink));
+	//	}
+	//	else //è·å–ç”µè§†å‰§
+	//	{
+	//		int is_all = strcontenthtml.find(L"s_items all", nStartPos);
+	//		if (is_all != -1)
+	//		{
+	//			nStartPos = is_all;
+	//		}
+	//		nEndPos = strcontenthtml.find(L"</div>", nStartPos);
+	//		std::wstring contentHtml = strcontenthtml.substr(nStartPos + 1, nEndPos - nStartPos);
+
+	//		// æ­£åˆ™è¡¨è¾¾è·å–è¯¥è§†é¢‘é“¾æ¥
+	//		const std::wregex pattern(L"href=\"(((http|ftp|https)://)(([a-zA-Z0-9\._-]+\.[a-zA-Z]{2,6})|([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}))(:[0-9]{1,4})*(/[a-zA-Z0-9\&%_\./-~-]*)?)[^\.]*>([0-9]{1,})<");
+	//		std::wsmatch result;
+
+	//		for (std::wsregex_iterator it(contentHtml.begin(), contentHtml.end(), pattern), end;     //endæ˜¯å°¾åè¿­ä»£å™¨ï¼Œregex_iteratoræ˜¯regex_iteratorçš„stringç±»å‹çš„ç‰ˆæœ¬
+	//			it != end;
+	//			++it)
+	//		{
+	//			vdinfo.resLinks.insert(std::pair<std::wstring, std::wstring>((*it)[(*it).size() - 1].str(), (*it)[1].str()));
+	//		}
+	//	}
+
+	//	// è·å–è§†é¢‘é›†æ•°
+	//	vdinfo.totalNum = vdinfo.resLinks.size();
+	//	if (vdinfo.totalNum != 0)
+	//	{
+	//		mags.push_back(vdinfo);
+	//	}
+	//}
+	//// æ¸…ç†ä½¿ç”¨å˜é‡
+	//html.clear();
+	//nPos = 0;
+	//n = 0;
+	
+	//-----------------------ä½¿ç”¨çˆ±å¥‡è‰ºè§†é¢‘è¿›è¡Œæœç´¢-----------------------------------
+	html = GetHtmlPage(search_name, 3);
+
+	while ((nPos = html.find(L"data-tvlist-elem=\"alllist\"", n)) != -1)
 	{
 		isSearch = TRUE;
-		// ÎªºóÃæÊı¾İfind½øĞĞÎ»ÒÆ
+		// ä¸ºåé¢æ•°æ®findè¿›è¡Œä½ç§»
 		n = nPos + 1;
 
 		VideoInfo vdinfo;
 
-		// »ñÈ¡¹Ø¼ü×ÖËÑË÷½á¹ûµÄÄÚÈİ¿é
-		int nEndPos = html.find(L"\"s_dir\"", n);
+		// è·å–å…³é”®å­—æœç´¢ç»“æœçš„å†…å®¹å—
+		int nEndPos = html.find(L"bottom_right", n);
 		std::wstring strcontenthtml = html.substr(n, nEndPos - n);
 
-		// »ñÈ¡ÊÓÆµÃû³Æ
-		int nStartPos = strcontenthtml.find(L"_log_title", 0);
-		nStartPos = nStartPos + 12;
-		nEndPos = strcontenthtml.find(L"\'", nStartPos);
-		std::wstring strname = strcontenthtml.substr(nStartPos, nEndPos - nStartPos);
+		// è·å–è§†é¢‘åç§°
+		int nStartPos = html.rfind(L"src=\"", nPos);
+		nStartPos = nStartPos - 3;
+		nEndPos = html.rfind(L"\"", nStartPos);
+		std::wstring strname = html.substr(nEndPos+1, nStartPos- nEndPos);
 		vdinfo.name = strname;
 
-		// »ñÈ¡Í¼Æ¬
-		nStartPos = strcontenthtml.find(L"s_target", 0);
-		nStartPos = nStartPos + 20;
-		nEndPos = strcontenthtml.find(L"\"", nStartPos);
-		std::wstring strimgw = strcontenthtml.substr(nStartPos, nEndPos - nStartPos);
+		// è·å–å›¾ç‰‡
+		nStartPos = nStartPos + 8;
+		nEndPos = html.find(L"\"", nStartPos);
+		std::wstring strimgw = html.substr(nStartPos, nEndPos - nStartPos);
 		std::string strimg;
 		WstringToString(strimg, strimgw);
 		vdinfo.img = strimg;
 
-		// »ñÈ¡ÊÓÆµÁ´½ÓÔ´Âë¿é
-		nStartPos = strcontenthtml.find(L"s_items", 0);
-		if (nStartPos < 0)	// »ñÈ¡µçÓ°
+		// è·å–è§†é¢‘é“¾æ¥æºç å—
+		nStartPos = 0;
+		int is_all = strcontenthtml.find(L"data-tvlist-elem=\"list\"", 0);
+		if (is_all < 0)	// è·å–ç”µå½±
 		{
-			nStartPos = strcontenthtml.find(L"href=\"http", 0);
-			nStartPos = nStartPos + 6;
-			nEndPos = strcontenthtml.find(L"\"", nStartPos);
-			std::wstring strreslink = strcontenthtml.substr(nStartPos, nEndPos - nStartPos);
-			vdinfo.resLinks.insert(std::pair<std::wstring, std::wstring>(strname, strreslink));
 		}
-		else //»ñÈ¡µçÊÓ¾ç
+		else //è·å–ç”µè§†å‰§
 		{
-			int is_all = strcontenthtml.find(L"s_items all", nStartPos);
-			if (is_all != -1)
-			{
-				nStartPos = is_all;
-			}
-			nEndPos = strcontenthtml.find(L"</div>", nStartPos);
-			std::wstring contentHtml = strcontenthtml.substr(nStartPos + 1, nEndPos - nStartPos);
-
-			// ÕıÔò±í´ï»ñÈ¡¸ÃÊÓÆµÁ´½Ó
-			const std::wregex pattern(L"href=\"(((http|ftp|https)://)(([a-zA-Z0-9\._-]+\.[a-zA-Z]{2,6})|([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}))(:[0-9]{1,4})*(/[a-zA-Z0-9\&%_\./-~-]*)?)[^\.]*>([0-9]{1,})<");
-			std::wsmatch result;
-
-			for (std::wsregex_iterator it(contentHtml.begin(), contentHtml.end(), pattern), end;     //endÊÇÎ²ºóµü´úÆ÷£¬regex_iteratorÊÇregex_iteratorµÄstringÀàĞÍµÄ°æ±¾
-				it != end;
-				++it)
-			{
-				vdinfo.resLinks.insert(std::pair<std::wstring, std::wstring>((*it)[(*it).size() - 1].str(), (*it)[1].str()));
-			}
+			nStartPos = is_all;
 		}
+		nEndPos = strcontenthtml.find(L"<div", nStartPos);
+		// æ­£åˆ™è¡¨è¾¾è·å–è¯¥è§†é¢‘é“¾æ¥
+		std::wstring contentHtml = strcontenthtml.substr(nStartPos + 1, nEndPos - nStartPos);
+		const std::wregex pattern(L"href=\"(((http|ftp|https)://)(([a-zA-Z0-9\._-]+\.[a-zA-Z]{2,6})|([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}))(:[0-9]{1,4})*(/[a-zA-Z0-9\&%_\./-~-]*)?)[^\.]*(title=\"|>)([\(\)0-9\u4e00-\u9fa5]{1,})");
+		std::wsmatch result;
 
-		// »ñÈ¡ÊÓÆµ¼¯Êı
+		for (std::wsregex_iterator it(contentHtml.begin(), contentHtml.end(), pattern), end;     //endæ˜¯å°¾åè¿­ä»£å™¨ï¼Œregex_iteratoræ˜¯regex_iteratorçš„stringç±»å‹çš„ç‰ˆæœ¬
+			it != end;
+			++it)
+		{
+			vdinfo.resLinks.insert(std::pair<std::wstring, std::wstring>((*it)[(*it).size() - 1].str(), (*it)[1].str()));
+		}
+		
+
+		// è·å–è§†é¢‘é›†æ•°
 		vdinfo.totalNum = vdinfo.resLinks.size();
 		if (vdinfo.totalNum != 0)
 		{
 			mags.push_back(vdinfo);
 		}
 	}
-	// ÇåÀíÊ¹ÓÃ±äÁ¿
+	// æ¸…ç†ä½¿ç”¨å˜é‡
 	html.clear();
 	nPos = 0;
 	n = 0;
 
-	// -----------------------Ê¹ÓÃÌÚÑ¶ÊÓÆµ½øĞĞËÑË÷-----------------------------------
+	// -----------------------ä½¿ç”¨è…¾è®¯è§†é¢‘è¿›è¡Œæœç´¢-----------------------------------
 	html = GetHtmlPage(search_name, 1);
 
 	while ((nPos = html.find(L"_playlist", n)) != -1)
 	{
 		isSearch = TRUE;
-		// ÎªºóÃæÊı¾İfind½øĞĞÎ»ÒÆ
+		// ä¸ºåé¢æ•°æ®findè¿›è¡Œä½ç§»
 		n = nPos + 1;
 
 		VideoInfo vdinfo;
 
-		// »ñÈ¡Í¼Æ¬
+		// è·å–å›¾ç‰‡
 		int nEndPos = html.rfind(L"r-imgerr", nPos);
 		nEndPos = nEndPos - 3;
 		int nStartPos = html.rfind(L"src", nEndPos);
@@ -227,11 +368,11 @@ std::vector<VideoInfo> MagParse::GetVideoInfos(char * search_name)
 		WstringToString(strimg, strimgw);
 		vdinfo.img = strimg;
 
-		// »ñÈ¡¹Ø¼ü×ÖËÑË÷½á¹ûµÄÄÚÈİ¿é
+		// è·å–å…³é”®å­—æœç´¢ç»“æœçš„å†…å®¹å—
 		nEndPos = html.find(L"tip_download", nPos);
 		std::wstring strreslink = html.substr(n, nEndPos - n);
 
-		// »ñÈ¡ÊÓÆµÃû³Æ
+		// è·å–è§†é¢‘åç§°
 		nStartPos = strreslink.find(L"title: \'", 0);
 		if (nStartPos != -1)
 		{
@@ -240,7 +381,7 @@ std::vector<VideoInfo> MagParse::GetVideoInfos(char * search_name)
 			std::wstring strname = strreslink.substr(nStartPos, nEndPos - nStartPos);
 			vdinfo.name = strname;
 
-			// Èç¹ûÊÓÆµĞÅÏ¢º¬ÓĞÎ´Õ¹¿ªµÄ±êÇ©£¬ĞèÒªµ¥¶À½øĞĞ
+			// å¦‚æœè§†é¢‘ä¿¡æ¯å«æœ‰æœªå±•å¼€çš„æ ‡ç­¾ï¼Œéœ€è¦å•ç‹¬è¿›è¡Œ
 			if (strreslink.find(L"video:poster_num_unfold") != -1)
 			{
 				nStartPos = html.rfind(L"result_title", nPos);
@@ -253,11 +394,11 @@ std::vector<VideoInfo> MagParse::GetVideoInfos(char * search_name)
 					WstringToString(url, strurl);
 					std::wstring childhtml = GetHtmlPage(url.c_str());
 
-					// ÕıÔò±í´ï»ñÈ¡¸ÃÊÓÆµÁ´½Ó
+					// æ­£åˆ™è¡¨è¾¾è·å–è¯¥è§†é¢‘é“¾æ¥
 					const std::wregex pattern(L"href=\"(((http|ftp|https)://)(([a-zA-Z0-9\._-]+\.[a-zA-Z]{2,6})|([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}))(:[0-9]{1,4})*(/[a-zA-Z0-9\&%_\./-~-]*)?)([^\.]*)episodeNumber\">([0-9]{1,})<");
 					std::wsmatch result;
 
-					for (std::wsregex_iterator it(childhtml.begin(), childhtml.end(), pattern), end;     //endÊÇÎ²ºóµü´úÆ÷£¬regex_iteratorÊÇregex_iteratorµÄstringÀàĞÍµÄ°æ±¾
+					for (std::wsregex_iterator it(childhtml.begin(), childhtml.end(), pattern), end;     //endæ˜¯å°¾åè¿­ä»£å™¨ï¼Œregex_iteratoræ˜¯regex_iteratorçš„stringç±»å‹çš„ç‰ˆæœ¬
 						it != end;
 						++it)
 					{
@@ -265,7 +406,7 @@ std::vector<VideoInfo> MagParse::GetVideoInfos(char * search_name)
 						//insert(std::pair<std::string, std::string>(key,value));
 					}
 
-					// »ñÈ¡ÊÓÆµ¼¯Êı
+					// è·å–è§†é¢‘é›†æ•°
 					vdinfo.totalNum = vdinfo.resLinks.size();
 
 					mags.push_back(vdinfo);
@@ -273,11 +414,11 @@ std::vector<VideoInfo> MagParse::GetVideoInfos(char * search_name)
 			}
 			else
 			{
-				// ÕıÔò±í´ï»ñÈ¡¸ÃÊÓÆµÁ´½Ó
+				// æ­£åˆ™è¡¨è¾¾è·å–è¯¥è§†é¢‘é“¾æ¥
 				const std::wregex pattern(L"href=\"(((http|ftp|https)://)(([a-zA-Z0-9\._-]+\.[a-zA-Z]{2,6})|([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}))(:[0-9]{1,4})*(/[a-zA-Z0-9\&%_\./-~-]*)?)([^\.]*)video:poster_(num|play)([^\.]*|[^\u4e00-\u9fa5]*)>([0-9\u4e00-\u9fa5]{1,})<");
 				std::wsmatch result;
 
-				for (std::wsregex_iterator it(strreslink.begin(), strreslink.end(), pattern), end;     //endÊÇÎ²ºóµü´úÆ÷£¬regex_iteratorÊÇregex_iteratorµÄstringÀàĞÍµÄ°æ±¾
+				for (std::wsregex_iterator it(strreslink.begin(), strreslink.end(), pattern), end;     //endæ˜¯å°¾åè¿­ä»£å™¨ï¼Œregex_iteratoræ˜¯regex_iteratorçš„stringç±»å‹çš„ç‰ˆæœ¬
 					it != end;
 					++it)
 				{
@@ -285,7 +426,7 @@ std::vector<VideoInfo> MagParse::GetVideoInfos(char * search_name)
 					//insert(std::pair<std::string, std::string>(key,value));
 				}
 
-				// »ñÈ¡ÊÓÆµ¼¯Êı
+				// è·å–è§†é¢‘é›†æ•°
 				vdinfo.totalNum = vdinfo.resLinks.size();
 				if (vdinfo.totalNum != 0)
 				{
@@ -294,7 +435,7 @@ std::vector<VideoInfo> MagParse::GetVideoInfos(char * search_name)
 			}
 		}
 	}
-	// ÇåÀíÊ¹ÓÃ±äÁ¿
+	// æ¸…ç†ä½¿ç”¨å˜é‡
 	html.clear();
 	nPos = 0;
 	n = 0;
@@ -313,12 +454,12 @@ std::string MagParse::FormatString(const char * lpcszFormat, ...)
 	if (NULL != lpcszFormat)
 	{
 		va_list marker = NULL;
-		va_start(marker, lpcszFormat); //³õÊ¼»¯±äÁ¿²ÎÊı  
-		size_t nLength = _vscprintf(lpcszFormat, marker) + 1; //»ñÈ¡¸ñÊ½»¯×Ö·û´®³¤¶È  
+		va_start(marker, lpcszFormat); //åˆå§‹åŒ–å˜é‡å‚æ•°  
+		size_t nLength = _vscprintf(lpcszFormat, marker) + 1; //è·å–æ ¼å¼åŒ–å­—ç¬¦ä¸²é•¿åº¦  
 		pszStr = new char[nLength];
 		memset(pszStr, '\0', nLength);
 		_vsnprintf_s(pszStr, nLength, nLength, lpcszFormat, marker);
-		va_end(marker); //ÖØÖÃ±äÁ¿²ÎÊı  
+		va_end(marker); //é‡ç½®å˜é‡å‚æ•°  
 	}
 	std::string strResult(pszStr);
 	delete[]pszStr;
@@ -337,7 +478,7 @@ BOOL MagParse::UrlEncode(const char* szSrc, char* pBuf, int cbBufLen, BOOL bUppe
 		return TRUE;
 	}
 
-	//ÏÈ×ª»»µ½UTF-8
+	//å…ˆè½¬æ¢åˆ°UTF-8
 	char baseChar = bUpperCase ? 'A' : 'a';
 	int cchWideChar = MultiByteToWideChar(CP_ACP, 0, szSrc, len_ascii, NULL, 0);
 	LPWSTR pUnicode = (LPWSTR)malloc((cchWideChar + 1) * sizeof(WCHAR));
@@ -356,7 +497,7 @@ BOOL MagParse::UrlEncode(const char* szSrc, char* pBuf, int cbBufLen, BOOL bUppe
 	pUTF8[cbUTF8] = '\0';
 
 	unsigned char c;
-	int cbDest = 0; //ÀÛ¼Ó
+	int cbDest = 0; //ç´¯åŠ 
 	unsigned char *pSrc = (unsigned char*)pUTF8;
 	unsigned char *pDest = (unsigned char*)pBuf;
 	while (*pSrc && cbDest < cbBufLen - 1)
@@ -376,7 +517,7 @@ BOOL MagParse::UrlEncode(const char* szSrc, char* pBuf, int cbBufLen, BOOL bUppe
 		}
 		else
 		{
-			//¼ì²é»º³åÇø´óĞ¡ÊÇ·ñ¹»ÓÃ£¿
+			//æ£€æŸ¥ç¼“å†²åŒºå¤§å°æ˜¯å¦å¤Ÿç”¨ï¼Ÿ
 			if (cbDest + 3 > cbBufLen - 1)
 				break;
 			pDest[0] = '%';
@@ -394,7 +535,7 @@ BOOL MagParse::UrlEncode(const char* szSrc, char* pBuf, int cbBufLen, BOOL bUppe
 	return TRUE;
 }
 
-//½âÂëºóÊÇutf-8±àÂë
+//è§£ç åæ˜¯utf-8ç¼–ç 
 BOOL MagParse::UrlDecode(const char* szSrc, char* pBuf, int cbBufLen)
 {
 	if (szSrc == NULL || pBuf == NULL || cbBufLen <= 0)
@@ -411,7 +552,7 @@ BOOL MagParse::UrlDecode(const char* szSrc, char* pBuf, int cbBufLen)
 	if (pUTF8 == NULL)
 		return FALSE;
 
-	int cbDest = 0; //ÀÛ¼Ó
+	int cbDest = 0; //ç´¯åŠ 
 	unsigned char *pSrc = (unsigned char*)szSrc;
 	unsigned char *pDest = (unsigned char*)pUTF8;
 	while (*pSrc)
@@ -419,7 +560,7 @@ BOOL MagParse::UrlDecode(const char* szSrc, char* pBuf, int cbBufLen)
 		if (*pSrc == '%')
 		{
 			*pDest = 0;
-			//¸ßÎ»
+			//é«˜ä½
 			if (pSrc[1] >= 'A' && pSrc[1] <= 'F')
 				*pDest += (pSrc[1] - 'A' + 10) * 0x10;
 			else if (pSrc[1] >= 'a' && pSrc[1] <= 'f')
@@ -427,7 +568,7 @@ BOOL MagParse::UrlDecode(const char* szSrc, char* pBuf, int cbBufLen)
 			else
 				*pDest += (pSrc[1] - '0') * 0x10;
 
-			//µÍÎ»
+			//ä½ä½
 			if (pSrc[2] >= 'A' && pSrc[2] <= 'F')
 				*pDest += (pSrc[2] - 'A' + 10);
 			else if (pSrc[2] >= 'a' && pSrc[2] <= 'f')
@@ -482,10 +623,10 @@ void MagParse::StringToWstring(std::wstring& szDst, std::string& str)
 void MagParse::WstringToString(std::string& szDst, std::wstring& wchar)
 {
 	std::wstring  wText = wchar;
-	DWORD dwNum = WideCharToMultiByte(CP_OEMCP, NULL, wText.c_str(), -1, NULL, 0, NULL, FALSE);// WideCharToMultiByteµÄÔËÓÃ
-	char *psText;  // psTextÎªchar*µÄÁÙÊ±Êı×é£¬×÷Îª¸³Öµ¸østd::stringµÄÖĞ¼ä±äÁ¿
+	DWORD dwNum = WideCharToMultiByte(CP_OEMCP, NULL, wText.c_str(), -1, NULL, 0, NULL, FALSE);// WideCharToMultiByteçš„è¿ç”¨
+	char *psText;  // psTextä¸ºchar*çš„ä¸´æ—¶æ•°ç»„ï¼Œä½œä¸ºèµ‹å€¼ç»™std::stringçš„ä¸­é—´å˜é‡
 	psText = new char[dwNum];
-	WideCharToMultiByte(CP_OEMCP, NULL, wText.c_str(), -1, psText, dwNum, NULL, FALSE);// WideCharToMultiByteµÄÔÙ´ÎÔËÓÃ
-	szDst = psText;// std::string¸³Öµ
-	delete[]psText;// psTextµÄÇå³ı
+	WideCharToMultiByte(CP_OEMCP, NULL, wText.c_str(), -1, psText, dwNum, NULL, FALSE);// WideCharToMultiByteçš„å†æ¬¡è¿ç”¨
+	szDst = psText;// std::stringèµ‹å€¼
+	delete[]psText;// psTextçš„æ¸…é™¤
 }
