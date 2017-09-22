@@ -13,7 +13,7 @@
 
 #pragma comment(lib, "libcef.lib")
 #pragma comment(lib, "libcef_dll_wrapper.lib")
-#pragma comment( lib, "gdiplus.lib") 
+#pragma comment(lib, "gdiplus.lib")
 
 INT_PTR CALLBACK DlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 void InitComBox(HWND hDlg);

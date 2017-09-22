@@ -330,7 +330,21 @@ std::vector<VideoInfo> MagParse::GetVideoInfos(char * search_name)
 	//		it != end;
 	//		++it)
 	//	{
-	//		vdinfo.resLinks.insert(std::pair<std::wstring, std::wstring>((*it)[(*it).size() - 1].str(), (*it)[1].str()));
+	//		if ((*it)[1].str().find(L"so.iqiyi.com",0) != -1)
+	//		{
+	//			std::string url;
+	//			WstringToString(url, (*it)[1].str());
+	//			std::wstring referrerhtml = GetHtmlPage(url.c_str());
+	//			nStartPos = referrerhtml.find(L"URL=",0);
+	//			nStartPos = nStartPos + 5;
+	//			nEndPos = referrerhtml.find(L"\'", nStartPos);
+	//			std::wstring linkurl = referrerhtml.substr(nStartPos, nEndPos - nStartPos);
+	//			vdinfo.resLinks.insert(std::pair<std::wstring, std::wstring>((*it)[(*it).size() - 1].str(), linkurl));
+	//		}
+	//		else
+	//		{
+	//			vdinfo.resLinks.insert(std::pair<std::wstring, std::wstring>((*it)[(*it).size() - 1].str(), (*it)[1].str()));
+	//		}
 	//	}
 	//	
 

@@ -1,11 +1,11 @@
-#ifndef __MAG_PARSE_H__
+ï»¿#ifndef __MAG_PARSE_H__
 #define __MAG_PARSE_H__
 #include "httptool.h"
 #include <regex>
 #include <string>
 #include <map>
 
-// ¶¨ÒåKey³¤¶ÈÅÅĞò
+// å®šä¹‰Keyé•¿åº¦æ’åº
 struct CmpByKeyLength {
 	bool operator()(const std::wstring& k1, const std::wstring& k2) {
 		return true;
@@ -14,10 +14,10 @@ struct CmpByKeyLength {
 
 typedef struct tagVideoInfo
 {
-	int							totalNum;				//¼¯Êı
-	std::string					img;					//Í¼Æ¬
-	std::wstring				name;					//Æ¬Ãû
-	std::map<std::wstring, std::wstring, CmpByKeyLength>	resLinks;				//×ÊÔ´Ãû³Æ
+	int							totalNum;				//é›†æ•°
+	std::string					img;					//å›¾ç‰‡
+	std::wstring				name;					//ç‰‡å
+	std::map<std::wstring, std::wstring, CmpByKeyLength>	resLinks;				//èµ„æºåç§°
 }VideoInfo;
 
 class MagParse
