@@ -3,6 +3,7 @@
 // π© videotool.rc  π”√
 //
 #define IDD_VIDEO                       101
+#define IDI_ICON                        107
 #define IDC_BROWN                       1001
 #define IDC_INTERFACE                   1003
 #define IDC_URL                         1004
@@ -19,7 +20,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        107
+#define _APS_NEXT_RESOURCE_VALUE        108
 #define _APS_NEXT_COMMAND_VALUE         40001
 #define _APS_NEXT_CONTROL_VALUE         1014
 #define _APS_NEXT_SYMED_VALUE           101

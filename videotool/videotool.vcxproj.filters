@@ -121,4 +121,9 @@
       <Filter>头文件\json</Filter>
     </None>
   </ItemGroup>
+  <ItemGroup>
+    <Image Include="icon.ico">
+      <Filter>资源文件</Filter>
+    </Image>
+  </ItemGroup>
 </Project>
