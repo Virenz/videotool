@@ -11,6 +11,16 @@
 void SimpleHandler::PlatformTitleChange(CefRefPtr<CefBrowser> browser,
                                         const CefString& title) {
   CefWindowHandle hwnd = browser->GetHost()->GetWindowHandle();
-  //SetDlgItemText(hwnd, IDC_VIDEOTITLE, std::wstring(title).c_str());
-  SetWindowText(hwnd, std::wstring(title).c_str());
+  // 如果为被嵌入到主对话框的主浏览器窗口则更改我们对话框标题  
+  //if (GetParent(hwnd) != NULL)
+  //{
+	 // hwnd = GetParent(hwnd);
+	 // SetWindowText(hwnd, std::wstring(title).c_str());
+  //}
+
+  //// 否则有内核创建（链接形式打开）的窗口标题设置为自己的窗口标题  
+  //else
+  //{
+	 // ::SetWindowText(hwnd, std::wstring(title).c_str());
+  //}
 }

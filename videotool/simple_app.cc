@@ -91,7 +91,7 @@ void SimpleApp::OnBeforeCommandLineProcessing(const CefString & process_type, Ce
 {	
 	// 此参数解决多窗口问题
 	command_line->AppendSwitch("process-per-site");
-	//command_line->AppendSwitch("no-proxy-server");
+	command_line->AppendSwitch("no-proxy-server");
 	//command_line->AppendSwitch("enable-npapi");
 	//command_line->AppendSwitchWithValue("register-pepper-plugins", "pepflashplayer.dll;application/x-shockwave-flash");
 	//加载flash插件、manifest.json中的version

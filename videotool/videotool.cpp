@@ -184,10 +184,10 @@ INT_PTR CALLBACK DlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 				// 获取需要播放视频的url
 				ZeroMemory(szBuff, sizeof(szBuff));
 				GetDlgItemTextA(hDlg, IDC_URL, szBuff, 200);
+
+				//启动播放该视频
 				std::string url;
 				url.append(jiexiurl + szBuff);
-				
-				//启动播放该视频
 				app.get()->PlayByCef(url);
 				break;
 			}

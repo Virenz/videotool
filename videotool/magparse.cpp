@@ -367,7 +367,7 @@ std::vector<VideoInfo> MagParse::GetVideoInfos(char * search_name)
 	// -----------------------使用腾讯视频进行搜索-----------------------------------
 	html = GetHtmlPage(search_name, 1);
 
-	while ((nPos = html.find(L"_playlist", n)) != -1)
+	while ((nPos = html.find(L"\"_playlist\"", n)) != -1)
 	{
 		isSearch = TRUE;
 		// 为后面数据find进行位移
