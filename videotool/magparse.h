@@ -1,11 +1,11 @@
-﻿#ifndef __MAG_PARSE_H__
+#ifndef __MAG_PARSE_H__
 #define __MAG_PARSE_H__
 #include "httptool.h"
 #include <regex>
 #include <string>
 #include <map>
 
-// 定义Key长度排序
+// use key sort
 struct CmpByKeyLength {
 	bool operator()(const std::wstring& k1, const std::wstring& k2) {
 		return true;
@@ -14,10 +14,10 @@ struct CmpByKeyLength {
 
 typedef struct tagVideoInfo
 {
-	int							totalNum;				//集数
-	std::string					img;					//图片
-	std::wstring				name;					//片名
-	std::map<std::wstring, std::wstring, CmpByKeyLength>	resLinks;				//资源名称
+	int							totalNum;				//video total
+	std::string					img;					//video img
+	std::wstring				name;					//video name
+	std::map<std::wstring, std::wstring, CmpByKeyLength>	resLinks;				//video links
 }VideoInfo;
 
 class MagParse

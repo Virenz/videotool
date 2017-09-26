@@ -1,4 +1,4 @@
-ï»¿#include <windows.h>
+#include <windows.h>
 #include <tchar.h>
 #include <thread>
 #include <commctrl.h>
@@ -14,6 +14,7 @@
 #pragma comment(lib, "libcef.lib")
 #pragma comment(lib, "libcef_dll_wrapper.lib")
 #pragma comment(lib, "gdiplus.lib")
+#pragma comment(linker,"\"/manifestdependency:type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'\"")
 
 INT_PTR CALLBACK DlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 void InitComBox(HWND hDlg);
@@ -26,8 +27,8 @@ ULONG_PTR m_gdiplusToken;
 HBITMAP s_hBitmap = NULL;
 CefRefPtr<SimpleApp>	app;
 BOOL					m_bCEFInitialized;
-std::multimap<std::string, std::string> jiexiurls;	// è®°å½•æ¥å£
-std::vector<void*>						lparams;	// è®°å½•treeview.lparamä¸´æ—¶ç”³è¯·ç©ºé—´çš„æŒ‡é’ˆï¼Œä¾¿äºè¿›è¡Œé‡Šæ”¾
+std::multimap<std::string, std::string> jiexiurls;	// ¼ÇÂ¼½Ó¿Ú
+std::vector<void*>						lparams;	// ¼ÇÂ¼treeview.lparamÁÙÊ±ÉêÇë¿Õ¼äµÄÖ¸Õë£¬±ãÓÚ½øĞĞÊÍ·Å
 
 // When generating projects with CMake the CEF_USE_SANDBOX value will be defined
 // automatically if using the required compiler version. Pass -DUSE_SANDBOX=OFF
@@ -165,7 +166,7 @@ INT_PTR CALLBACK DlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 			app = NULL;
 			CefShutdown();
 		}
-		PostQuitMessage(0);//é€€å‡º
+		PostQuitMessage(0);//ÍË³ö
 		//EndDialog(hDlg, IDCANCEL);
 	}
 	case WM_COMMAND:
@@ -174,26 +175,26 @@ INT_PTR CALLBACK DlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 		{
 			case IDOK:
 			{
-				// è·å–è§£æå€Ÿå£
+				// »ñÈ¡½âÎö½è¿Ú
 				HWND combox = GetDlgItem(hDlg, IDC_INTERFACE);
 				CHAR szBuff[200];
 				ZeroMemory(szBuff, sizeof(szBuff));
 				SendMessageA(combox, CB_GETLBTEXT, SendMessage(combox, CB_GETCURSEL, 0, 0), (LPARAM)szBuff);
 				std::string jiexiurl = jiexiurls.find(szBuff)->second;
 
-				// è·å–éœ€è¦æ’­æ”¾è§†é¢‘çš„url
+				// »ñÈ¡ĞèÒª²¥·ÅÊÓÆµµÄurl
 				ZeroMemory(szBuff, sizeof(szBuff));
 				GetDlgItemTextA(hDlg, IDC_URL, szBuff, 200);
 
-				//å¯åŠ¨æ’­æ”¾è¯¥è§†é¢‘
+				//Æô¶¯²¥·Å¸ÃÊÓÆµ
 				std::string url;
 				url.append(jiexiurl + szBuff);
-				app.get()->PlayByCef(url);
+				app.get()->PlayByCef(jiexiurl);
 				break;
 			}
 			case IDC_START_SEARCH:
 			{
-				// æ¸…ç†è§†é¢‘ä¿¡æ¯æ•°æ®
+				// ÇåÀíÊÓÆµĞÅÏ¢Êı¾İ
 				ClearTreeControl(hDlg);
 
 				std::thread action(performActions, hDlg);
@@ -248,7 +249,7 @@ INT_PTR CALLBACK DlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 
 void performActions(HWND hwnd)
 {
-	// å”¤é†’æ‰§è¡Œ æŒ‰é’®
+	// »½ĞÑÖ´ĞĞ °´Å¥
 	EnableWindow(GetDlgItem(hwnd, IDC_START_SEARCH), false);
 
 	char search_str[MAX_PATH];
@@ -259,13 +260,13 @@ void performActions(HWND hwnd)
 	InitTreeControl(hwnd, magParse);
 	delete magParse;
 
-	// å”¤é†’æ‰§è¡Œ æŒ‰é’®
+	// »½ĞÑÖ´ĞĞ °´Å¥
 	EnableWindow(GetDlgItem(hwnd, IDC_START_SEARCH), true);
 }
 
 void InitComBox(HWND hDlg)
 {
-	// æ¸…ç©ºjiexiurlsæ•°æ®
+	// Çå¿ÕjiexiurlsÊı¾İ
 	jiexiurls.clear();
 
 	HWND combox = GetDlgItem(hDlg, IDC_INTERFACE);
@@ -302,7 +303,7 @@ int InitTreeControl(HWND hdlg, MagParse *uidatas)
 
 		HWND m_tree = GetDlgItem(hdlg, IDC_VIDEOINFOS);
 		HTREEITEM Selected = TreeView_InsertItem(m_tree, &insert);
-		//for (int index = 0; index < sp.totalNum; index++) //éå†jsonæˆå‘˜
+		//for (int index = 0; index < sp.totalNum; index++) //±éÀújson³ÉÔ±
 		for(std::multimap<std::wstring, std::wstring>::iterator iter = sp.resLinks.begin(); iter != sp.resLinks.end(); ++iter)
 		{
 			TV_ITEM item1;
@@ -332,8 +333,8 @@ void ClearTreeControl(HWND hwnd)
 	std::vector<void*>::iterator iter = lparams.begin();
 	while (iter != lparams.end()) //#1
 	{
-		//æ³¨æ„è¦å…ˆé‡Šæ”¾å†…å­˜ï¼Œåœ¨åˆ é™¤vectorå…ƒç´ ï¼Œé¡ºåºä¸èƒ½é¢ å€’ã€‚
-		//é‡Šæ”¾å†…å­˜
+		//×¢ÒâÒªÏÈÊÍ·ÅÄÚ´æ£¬ÔÚÉ¾³ıvectorÔªËØ£¬Ë³Ğò²»ÄÜµßµ¹¡£
+		//ÊÍ·ÅÄÚ´æ
 		free(*iter);
 		*iter = NULL;
 		iter++; //#1
@@ -351,7 +352,7 @@ BOOL VideoLoadImage(HWND hDlg, const char* pszFileName)
 		return FALSE;
 
 	size_t dwSize;
-	// æ ¹æ®æ–‡ä»¶å¤§å°åˆ†é…HGLOBALå†…å­˜  
+	// ¸ù¾İÎÄ¼ş´óĞ¡·ÖÅäHGLOBALÄÚ´æ  
 	dwSize = httpTool->getReponseHTMLSize();
 
 	HGLOBAL hGlobal = GlobalAlloc(GMEM_MOVEABLE | GMEM_NODISCARD, dwSize);
@@ -367,7 +368,7 @@ BOOL VideoLoadImage(HWND hDlg, const char* pszFileName)
 		return FALSE;
 	};
 
-	// å°†æ–‡ä»¶å†…å®¹è¯»åˆ°HGLOBALå†…å­˜ä¸­ 
+	// ½«ÎÄ¼şÄÚÈİ¶Áµ½HGLOBALÄÚ´æÖĞ 
 	int erro = 0;
 	memcpy(pData, httpTool->getReponseHTML(), dwSize);
 	pData[dwSize] = 0;
@@ -382,7 +383,7 @@ BOOL VideoLoadImage(HWND hDlg, const char* pszFileName)
 	GlobalUnlock(hGlobal);
 	
 
-	// åˆ©ç”¨hGlobalå†…å­˜ä¸­çš„æ•°æ®åˆ›å»ºstream  
+	// ÀûÓÃhGlobalÄÚ´æÖĞµÄÊı¾İ´´½¨stream  
 	IStream* istream = NULL;
 	if (CreateStreamOnHGlobal(hGlobal, TRUE, &istream) != S_OK)
 	{
@@ -392,11 +393,11 @@ BOOL VideoLoadImage(HWND hDlg, const char* pszFileName)
 	HWND videoimg = GetDlgItem(hDlg, IDC_VIDEOIMG);
 	HDC hdc = GetDC(videoimg);//BeginPaint(hDlg, &ps);
 
-	//åŠ è½½å›¾åƒ  
+	//¼ÓÔØÍ¼Ïñ  
 	Gdiplus::Image* image = Gdiplus::Image::FromStream(istream);// https://puui.qpic.cn/vcover_vt_pic/0/m8i6uooilmandtf1502788298/260
 	if (image->GetLastStatus() != Gdiplus::Ok)
 	{
-		MessageBox(hDlg, L"åŠ è½½å›¾ç‰‡å¤±è´¥!", L"æç¤º", MB_OK);
+		MessageBox(hDlg, L"¼ÓÔØÍ¼Æ¬Ê§°Ü!", L"ÌáÊ¾", MB_OK);
 		return -1;
 	}
 
@@ -404,14 +405,14 @@ BOOL VideoLoadImage(HWND hDlg, const char* pszFileName)
 	GetClientRect(videoimg, &videoimgrect);
 	//ShowWindow(videoimg, SW_HIDE);
 
-	//å–å¾—å®½åº¦å’Œé«˜åº¦  
+	//È¡µÃ¿í¶ÈºÍ¸ß¶È  
 	Gdiplus::Image* pThumbnail = image->GetThumbnailImage(
 		videoimgrect.right - videoimgrect.left,
 		videoimgrect.bottom - videoimgrect.top,
 		NULL,
 		NULL);
 
-	//ç»˜å›¾  
+	//»æÍ¼  
 	Gdiplus::Graphics graphics(hdc);
 	graphics.DrawImage(image, videoimgrect.left, videoimgrect.top, pThumbnail->GetWidth(), pThumbnail->GetHeight());
 
