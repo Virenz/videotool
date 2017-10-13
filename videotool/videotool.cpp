@@ -189,7 +189,7 @@ INT_PTR CALLBACK DlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 				//启动播放该视频
 				std::string url;
 				url.append(jiexiurl + szBuff);
-				app.get()->PlayByCef(jiexiurl);
+				app.get()->PlayByCef(url);
 				break;
 			}
 			case IDC_START_SEARCH:
