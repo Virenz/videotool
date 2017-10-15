@@ -224,20 +224,21 @@ std::vector<VideoInfo> MagParse::GetVideoInfos(char * search_name)
 		int nEndPos = html.find(L"bottom_right", n);
 		std::wstring strcontenthtml = html.substr(n, nEndPos - n);
 
-		// 获取视频名称
-		int nStartPos = html.rfind(L"src=\"", nPos);
-		nStartPos = nStartPos - 3;
-		nEndPos = html.rfind(L"\"", nStartPos);
-		std::wstring strname = html.substr(nEndPos+1, nStartPos- nEndPos);
-		vdinfo.name = strname;
-
 		// 获取图片
-		nStartPos = nStartPos + 8;
+		int nStartPos = html.rfind(L"src=\"", nPos);
+		nStartPos = nStartPos + 5;
 		nEndPos = html.find(L"\"", nStartPos);
 		std::wstring strimgw = html.substr(nStartPos, nEndPos - nStartPos);
 		std::string strimg;
 		WstringToString(strimg, strimgw);
 		vdinfo.img = strimg;
+
+		// 获取视频名称
+		nStartPos = html.rfind(L"data-searchpingback-albumname", nStartPos);
+		nStartPos = nStartPos + 31;
+		nEndPos = html.find(L"\"", nStartPos);
+		std::wstring strname = html.substr(nStartPos, nEndPos - nStartPos);
+		vdinfo.name = strname;
 
 		// 获取视频链接源码块
 		nStartPos = 0;
@@ -254,7 +255,7 @@ std::vector<VideoInfo> MagParse::GetVideoInfos(char * search_name)
 		
 		// 正则表达获取该视频链接
 		std::wstring contentHtml = strcontenthtml.substr(nStartPos + 1, nEndPos - nStartPos);
-		const std::wregex pattern(L"href=\"(((http|ftp|https)://)(([a-zA-Z0-9\._-]+\.[a-zA-Z]{2,6})|([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}))(:[0-9]{1,4})*(/[a-zA-Z0-9\&%_\./-~-]*)?)[^\.]*(title=\"|>)([\(\)0-9\u4e00-\u9fa5]{1,})");
+		const std::wregex pattern(L"href=\"(((http|ftp|https)://)(([a-zA-Z0-9\._-]+\.[a-zA-Z]{2,6})|([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}))(:[0-9]{1,4})*(/[a-zA-Z0-9\&%_\./-~-]*)?)[^\.]*(title=\"|>)([\(\) 0-9\u4e00-\u9fa5]{1,})");
 		std::wsmatch result;
 
 		for (std::wsregex_iterator it(contentHtml.begin(), contentHtml.end(), pattern), end;     //end是尾后迭代器，regex_iterator是regex_iterator的string类型的版本
