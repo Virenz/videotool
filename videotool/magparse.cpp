@@ -254,6 +254,7 @@ std::vector<VideoInfo> MagParse::GetVideoInfos(char * search_name)
 		}
 		
 		// 正则表达获取该视频链接
+		// ^(?![\\p{P}\\p{S}])[\u4e00-\u9fa5]+$ 匹配不含有中文符号的中文字符
 		std::wstring contentHtml = strcontenthtml.substr(nStartPos + 1, nEndPos - nStartPos);
 		const std::wregex pattern(L"href=\"(((http|ftp|https)://)(([a-zA-Z0-9\._-]+\.[a-zA-Z]{2,6})|([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}))(:[0-9]{1,4})*(/[a-zA-Z0-9\&%_\./-~-]*)?)[^\.]*(title=\"|>)([\(\) 0-9\u4e00-\u9fa5]{1,})");
 		std::wsmatch result;
