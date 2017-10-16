@@ -155,7 +155,7 @@ INT_PTR CALLBACK DlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 		{
 			if (app.get()->GetCefClient() != NULL)
 			{
-				app.get()->GetCefClient()->CloseAllBrowsers(false);
+				app.get()->GetCefClient()->CloseAllBrowsers(true);
 			}
 		}
 		if (m_bCEFInitialized)
