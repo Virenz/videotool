@@ -17,6 +17,7 @@ public:
 
 	void SetParentWindow(HWND hParentWindow, RECT parentRect);
 	CefRefPtr<SimpleHandler> GetCefClient();
+	HWND GetBrowserHostWnd();
 	// CefApp methods:
 	virtual CefRefPtr<CefBrowserProcessHandler> GetBrowserProcessHandler()
 		OVERRIDE {

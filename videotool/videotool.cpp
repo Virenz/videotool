@@ -30,6 +30,8 @@ BOOL					m_bCEFInitialized;
 std::multimap<std::string, std::string> jiexiurls;	// 记录接口
 std::vector<void*>						lparams;	// 记录treeview.lparam临时申请空间的指针，便于进行释放
 
+POINT oldRect;
+
 // When generating projects with CMake the CEF_USE_SANDBOX value will be defined
 // automatically if using the required compiler version. Pass -DUSE_SANDBOX=OFF
 // to the CMake command-line to disable use of the sandbox.
@@ -93,7 +95,7 @@ int WINAPI WinMain(HINSTANCE hInstance,
 	settings.no_sandbox = true;
 #endif
 
-	HWND hdlg = CreateDialog(hInstance, MAKEINTRESOURCE(IDD_VIDEO), NULL, (DLGPROC)DlgProc);
+	HWND hdlg = CreateDialog(hInstance, MAKEINTRESOURCE(IDD_VIDEO), GetDesktopWindow(), (DLGPROC)DlgProc);
 	if (!hdlg)
 	{
 		return 0;
@@ -110,6 +112,11 @@ int WINAPI WinMain(HINSTANCE hInstance,
 	htmlRect.right -= wndInfo.rcClient.left;
 	htmlRect.top -= wndInfo.rcClient.top;
 	htmlRect.bottom -= wndInfo.rcClient.top;
+
+	RECT rect;
+	GetClientRect(hdlg, &rect);
+	oldRect.x = rect.right - rect.left;
+	oldRect.y = rect.bottom - rect.top;
 
 	ShowWindow(hHTMLGroupBox, SW_HIDE);
 	app.get()->SetParentWindow(hdlg, htmlRect);
@@ -146,6 +153,93 @@ INT_PTR CALLBACK DlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 		HINSTANCE hInst = GetModuleHandle(NULL);
 		SendMessage(hDlg, WM_SETICON, ICON_SMALL, (LPARAM)LoadIcon(hInst, MAKEINTRESOURCE(IDI_ICON)));
 		InitComBox(hDlg);
+		break;
+	}
+	case WM_SIZE:
+	{
+		INT nWidth = LOWORD(lParam);
+		INT nHeight = HIWORD(lParam);
+
+		float   ratio[2];
+		POINT   newDialogSize;
+		RECT    newRect;
+
+		WINDOWINFO wndInfo;
+		GetWindowInfo(hDlg, &wndInfo);
+
+		//获取新的客户区的大小  
+		GetClientRect(hDlg, &newRect);
+		newDialogSize.x = newRect.right - newRect.left;
+		newDialogSize.y = newRect.bottom - newRect.top;
+
+		//得现在的对话框与以往对话框的大小比例  
+		ratio[0] = (float)newDialogSize.x / oldRect.x;
+		ratio[1] = (float)newDialogSize.y / oldRect.y;
+
+		RECT rect;
+
+		HWND hStaticSearch = GetDlgItem(hDlg, IDC_STATIC_SEARCH);
+		GetWindowRect(hStaticSearch, &rect);
+		MoveWindow(hStaticSearch, 
+			newDialogSize.x - wndInfo.rcClient.left - (oldRect.x - rect.left),
+			rect.top - wndInfo.rcClient.top,
+			rect.right - rect.left,
+			(rect.bottom - rect.top)*ratio[1],
+			TRUE);
+
+		HWND hSearch = GetDlgItem(hDlg, IDC_SEARCH);
+		GetWindowRect(hSearch, &rect);
+		MoveWindow(hSearch,
+			newDialogSize.x - wndInfo.rcClient.left - (oldRect.x - rect.left),
+			rect.top - wndInfo.rcClient.top,
+			rect.right - rect.left,
+			rect.bottom - rect.top,
+			TRUE);
+
+		HWND hBtnStartSearch = GetDlgItem(hDlg, IDC_START_SEARCH);
+		GetWindowRect(hBtnStartSearch, &rect);
+		MoveWindow(hBtnStartSearch,
+			newDialogSize.x - wndInfo.rcClient.left - (oldRect.x - rect.left),
+			rect.top - wndInfo.rcClient.top,
+			rect.right - rect.left,
+			(rect.bottom - rect.top),
+			TRUE);
+
+		HWND hTreeVideoInfos = GetDlgItem(hDlg, IDC_VIDEOINFOS);
+		GetWindowRect(hTreeVideoInfos, &rect);
+		MoveWindow(hTreeVideoInfos,
+			newDialogSize.x - wndInfo.rcClient.left - (oldRect.x - rect.left),
+			rect.top - wndInfo.rcClient.top,
+			rect.right - rect.left,
+			(rect.bottom - rect.top)*ratio[1],
+			TRUE);
+
+		HWND hImageVideoImg = GetDlgItem(hDlg, IDC_VIDEOIMG);
+		GetWindowRect(hImageVideoImg, &rect);
+		MoveWindow(hImageVideoImg,
+			newDialogSize.x - wndInfo.rcClient.left - (oldRect.x - rect.left),
+			(rect.top - wndInfo.rcClient.top)*ratio[1],
+			rect.right - rect.left,
+			rect.bottom - rect.top,
+			TRUE);
+
+		HWND hWebBrown = GetDlgItem(hDlg, IDC_BROWN);
+		HWND hBrowserWnd = app.get()->GetBrowserHostWnd();
+		GetWindowRect(hWebBrown, &rect);
+		MoveWindow(hWebBrown,
+			rect.left - wndInfo.rcClient.left,
+			rect.top - wndInfo.rcClient.top,
+			(rect.right - rect.left)*ratio[0],
+			(rect.bottom - rect.top)*ratio[1],
+			TRUE);
+		MoveWindow(hBrowserWnd,
+			rect.left - wndInfo.rcClient.left,
+			rect.top - wndInfo.rcClient.top,
+			(rect.right - rect.left)*ratio[0],
+			(rect.bottom - rect.top)*ratio[1],
+			TRUE);
+
+		oldRect = newDialogSize;
 		break;
 	}
 	case WM_CLOSE:

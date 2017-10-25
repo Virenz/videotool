@@ -77,6 +77,11 @@ CefRefPtr<SimpleHandler> SimpleApp::GetCefClient()
 	return m_pCefClient;
 }
 
+HWND SimpleApp::GetBrowserHostWnd()
+{ 
+	return m_pCefClient->GetBrowser().get() ? m_pCefClient->GetBrowser()->GetHost()->GetWindowHandle() : NULL;
+}
+
 void SimpleApp::PlayByCef(CefString url)
 {
 	CefBrowser* pBrowser = m_pCefClient->GetBrowser();
