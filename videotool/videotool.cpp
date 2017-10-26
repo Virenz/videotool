@@ -113,14 +113,9 @@ int WINAPI WinMain(HINSTANCE hInstance,
 	htmlRect.top -= wndInfo.rcClient.top;
 	htmlRect.bottom -= wndInfo.rcClient.top;
 
-	RECT rect;
-	GetClientRect(hdlg, &rect);
-	oldRect.x = rect.right - rect.left;
-	oldRect.y = rect.bottom - rect.top;
-
 	ShowWindow(hHTMLGroupBox, SW_HIDE);
 	app.get()->SetParentWindow(hdlg, htmlRect);
-	
+
 	// Initialize CEF.
 	m_bCEFInitialized = CefInitialize(main_args, settings, app.get(), sandbox_info);
 
@@ -153,93 +148,102 @@ INT_PTR CALLBACK DlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 		HINSTANCE hInst = GetModuleHandle(NULL);
 		SendMessage(hDlg, WM_SETICON, ICON_SMALL, (LPARAM)LoadIcon(hInst, MAKEINTRESOURCE(IDI_ICON)));
 		InitComBox(hDlg);
+		// 获取初始化窗口大小
+		RECT rect;
+		GetClientRect(hDlg, &rect);
+		oldRect.x = rect.right - rect.left;
+		oldRect.y = rect.bottom - rect.top;
 		break;
 	}
 	case WM_SIZE:
 	{
-		INT nWidth = LOWORD(lParam);
-		INT nHeight = HIWORD(lParam);
+		if (wParam == SIZE_MAXIMIZED || wParam == SIZE_RESTORED)
+		{
 
-		float   ratio[2];
-		POINT   newDialogSize;
-		RECT    newRect;
+			INT nWidth = LOWORD(lParam);
+			INT nHeight = HIWORD(lParam);
 
-		WINDOWINFO wndInfo;
-		GetWindowInfo(hDlg, &wndInfo);
+			float   ratio[2];
+			POINT   newDialogSize;
+			RECT    newRect;
 
-		//获取新的客户区的大小  
-		GetClientRect(hDlg, &newRect);
-		newDialogSize.x = newRect.right - newRect.left;
-		newDialogSize.y = newRect.bottom - newRect.top;
+			WINDOWINFO wndInfo;
+			GetWindowInfo(hDlg, &wndInfo);
 
-		//得现在的对话框与以往对话框的大小比例  
-		ratio[0] = (float)newDialogSize.x / oldRect.x;
-		ratio[1] = (float)newDialogSize.y / oldRect.y;
+			//获取新的客户区的大小  
+			GetClientRect(hDlg, &newRect);
+			newDialogSize.x = newRect.right - newRect.left;
+			newDialogSize.y = newRect.bottom - newRect.top;
 
-		RECT rect;
+			//得现在的对话框与以往对话框的大小比例  
+			ratio[0] = (float)newDialogSize.x / oldRect.x;
+			ratio[1] = (float)newDialogSize.y / oldRect.y;
 
-		HWND hStaticSearch = GetDlgItem(hDlg, IDC_STATIC_SEARCH);
-		GetWindowRect(hStaticSearch, &rect);
-		MoveWindow(hStaticSearch, 
-			newDialogSize.x - wndInfo.rcClient.left - (oldRect.x - rect.left),
-			rect.top - wndInfo.rcClient.top,
-			rect.right - rect.left,
-			(rect.bottom - rect.top)*ratio[1],
-			TRUE);
+			RECT rect;
 
-		HWND hSearch = GetDlgItem(hDlg, IDC_SEARCH);
-		GetWindowRect(hSearch, &rect);
-		MoveWindow(hSearch,
-			newDialogSize.x - wndInfo.rcClient.left - (oldRect.x - rect.left),
-			rect.top - wndInfo.rcClient.top,
-			rect.right - rect.left,
-			rect.bottom - rect.top,
-			TRUE);
+			HWND hStaticSearch = GetDlgItem(hDlg, IDC_STATIC_SEARCH);
+			GetWindowRect(hStaticSearch, &rect);
+			MoveWindow(hStaticSearch,
+				newDialogSize.x - wndInfo.rcClient.left - (oldRect.x - rect.left),
+				rect.top - wndInfo.rcClient.top,
+				rect.right - rect.left,
+				(rect.bottom - rect.top)*ratio[1],
+				TRUE);
 
-		HWND hBtnStartSearch = GetDlgItem(hDlg, IDC_START_SEARCH);
-		GetWindowRect(hBtnStartSearch, &rect);
-		MoveWindow(hBtnStartSearch,
-			newDialogSize.x - wndInfo.rcClient.left - (oldRect.x - rect.left),
-			rect.top - wndInfo.rcClient.top,
-			rect.right - rect.left,
-			(rect.bottom - rect.top),
-			TRUE);
+			HWND hSearch = GetDlgItem(hDlg, IDC_SEARCH);
+			GetWindowRect(hSearch, &rect);
+			MoveWindow(hSearch,
+				newDialogSize.x - wndInfo.rcClient.left - (oldRect.x - rect.left),
+				rect.top - wndInfo.rcClient.top,
+				rect.right - rect.left,
+				rect.bottom - rect.top,
+				TRUE);
 
-		HWND hTreeVideoInfos = GetDlgItem(hDlg, IDC_VIDEOINFOS);
-		GetWindowRect(hTreeVideoInfos, &rect);
-		MoveWindow(hTreeVideoInfos,
-			newDialogSize.x - wndInfo.rcClient.left - (oldRect.x - rect.left),
-			rect.top - wndInfo.rcClient.top,
-			rect.right - rect.left,
-			(rect.bottom - rect.top)*ratio[1],
-			TRUE);
+			HWND hBtnStartSearch = GetDlgItem(hDlg, IDC_START_SEARCH);
+			GetWindowRect(hBtnStartSearch, &rect);
+			MoveWindow(hBtnStartSearch,
+				newDialogSize.x - wndInfo.rcClient.left - (oldRect.x - rect.left),
+				rect.top - wndInfo.rcClient.top,
+				rect.right - rect.left,
+				(rect.bottom - rect.top),
+				TRUE);
 
-		HWND hImageVideoImg = GetDlgItem(hDlg, IDC_VIDEOIMG);
-		GetWindowRect(hImageVideoImg, &rect);
-		MoveWindow(hImageVideoImg,
-			newDialogSize.x - wndInfo.rcClient.left - (oldRect.x - rect.left),
-			(rect.top - wndInfo.rcClient.top)*ratio[1],
-			rect.right - rect.left,
-			rect.bottom - rect.top,
-			TRUE);
+			HWND hTreeVideoInfos = GetDlgItem(hDlg, IDC_VIDEOINFOS);
+			GetWindowRect(hTreeVideoInfos, &rect);
+			MoveWindow(hTreeVideoInfos,
+				newDialogSize.x - wndInfo.rcClient.left - (oldRect.x - rect.left),
+				rect.top - wndInfo.rcClient.top,
+				rect.right - rect.left,
+				(rect.bottom - rect.top)*ratio[1],
+				TRUE);
 
-		HWND hWebBrown = GetDlgItem(hDlg, IDC_BROWN);
-		HWND hBrowserWnd = app.get()->GetBrowserHostWnd();
-		GetWindowRect(hWebBrown, &rect);
-		MoveWindow(hWebBrown,
-			rect.left - wndInfo.rcClient.left,
-			rect.top - wndInfo.rcClient.top,
-			(rect.right - rect.left)*ratio[0],
-			(rect.bottom - rect.top)*ratio[1],
-			TRUE);
-		MoveWindow(hBrowserWnd,
-			rect.left - wndInfo.rcClient.left,
-			rect.top - wndInfo.rcClient.top,
-			(rect.right - rect.left)*ratio[0],
-			(rect.bottom - rect.top)*ratio[1],
-			TRUE);
+			HWND hImageVideoImg = GetDlgItem(hDlg, IDC_VIDEOIMG);
+			GetWindowRect(hImageVideoImg, &rect);
+			MoveWindow(hImageVideoImg,
+				newDialogSize.x - wndInfo.rcClient.left - (oldRect.x - rect.left),
+				(rect.top - wndInfo.rcClient.top)*ratio[1],
+				rect.right - rect.left,
+				rect.bottom - rect.top,
+				TRUE);
 
-		oldRect = newDialogSize;
+			HWND hWebBrown = GetDlgItem(hDlg, IDC_BROWN);
+			HWND hBrowserWnd = app.get()->GetBrowserHostWnd();
+			GetWindowRect(hWebBrown, &rect);
+			MoveWindow(hWebBrown,
+				rect.left - wndInfo.rcClient.left,
+				rect.top - wndInfo.rcClient.top,
+				(rect.right - rect.left)*ratio[0],
+				(rect.bottom - rect.top)*ratio[1],
+				TRUE);
+			MoveWindow(hBrowserWnd,
+				rect.left - wndInfo.rcClient.left,
+				rect.top - wndInfo.rcClient.top,
+				(rect.right - rect.left)*ratio[0],
+				(rect.bottom - rect.top)*ratio[1],
+				TRUE);
+
+			oldRect = newDialogSize;
+		}
 		break;
 	}
 	case WM_CLOSE:
