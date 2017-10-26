@@ -113,8 +113,8 @@ int WINAPI WinMain(HINSTANCE hInstance,
 	htmlRect.top -= wndInfo.rcClient.top;
 	htmlRect.bottom -= wndInfo.rcClient.top;
 
-	ShowWindow(hHTMLGroupBox, SW_HIDE);
 	app.get()->SetParentWindow(hdlg, htmlRect);
+	ShowWindow(hHTMLGroupBox, SW_HIDE);
 
 	// Initialize CEF.
 	m_bCEFInitialized = CefInitialize(main_args, settings, app.get(), sandbox_info);
@@ -157,7 +157,7 @@ INT_PTR CALLBACK DlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 	}
 	case WM_SIZE:
 	{
-		if (wParam == SIZE_MAXIMIZED || wParam == SIZE_RESTORED)
+		if ((wParam == SIZE_MAXIMIZED || wParam == SIZE_RESTORED) && app.get()->GetCefClient() != NULL)
 		{
 
 			INT nWidth = LOWORD(lParam);
@@ -427,7 +427,8 @@ int InitTreeControl(HWND hdlg, MagParse *uidatas)
 void ClearTreeControl(HWND hwnd)
 {
 	HWND m_tree = GetDlgItem(hwnd, IDC_VIDEOINFOS);
-	
+	TreeView_DeleteAllItems(m_tree);
+
 	std::vector<void*>::iterator iter = lparams.begin();
 	while (iter != lparams.end()) //#1
 	{
@@ -438,7 +439,7 @@ void ClearTreeControl(HWND hwnd)
 		iter++; //#1
 	}
 	lparams.clear();
-	TreeView_DeleteAllItems(m_tree);
+	
 }
 
 BOOL VideoLoadImage(HWND hDlg, const char* pszFileName)
